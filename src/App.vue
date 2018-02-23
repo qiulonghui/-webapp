@@ -24,7 +24,7 @@
   	</div>
     <transition name="slide">
     	<keep-alive>
-				<router-view :reqUrl="reqUrl"></router-view>
+				<router-view  :reqUrl="reqUrl"></router-view>
 			</keep-alive>	
     </transition>
   </div>
