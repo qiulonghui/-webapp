@@ -99,6 +99,7 @@
 		    		{tel:this.phoneNumber,checkCode:this.verCode},
 		    		{emulateJSON : true}
 	    		).then((response)=>{
+	    			 // 响应成功回调
 						if(response.body.return_code===1){
 							var msg = JSON.parse(response.body.return_msg);
 							saveToLocal("token",msg.token);
@@ -109,6 +110,9 @@
 						}else{
 							Toast(response.body.return_msg);
 						}
+					},(response) => {
+					  // 响应错误回调
+					  Toast('请求失败，请检查网络');
 					})
 				}
 			}

@@ -8,12 +8,17 @@ import router from './router'
 import VueResource from 'vue-resource'
 import { saveToLocal,loadFromLocal } from './common/js/store'
 
-
+document.addEventListener("netchange",function(){
+  if(plus.networkinfo.getCurrentType()===plus.networkinfo.CONNECTION_NONE){
+  	alert("当前未连接网络")
+  }
+}, false );
 
 Vue.config.productionTip = false
 
 Vue.use(MintUI)
 Vue.use(VueResource)
+
 
 /* eslint-disable no-new */
 new Vue({

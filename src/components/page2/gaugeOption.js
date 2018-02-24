@@ -104,7 +104,7 @@ export default{
             length:'86%'
         },
         data: [{
-            value: 20
+            value: 0
         }]
     },{
         name: '最内层线',

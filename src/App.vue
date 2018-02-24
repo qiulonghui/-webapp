@@ -24,7 +24,7 @@
   	</div>
     <transition name="slide">
     	<keep-alive>
-				<router-view  :reqUrl="reqUrl"></router-view>
+				<router-view :reqUrl="reqUrl"></router-view>
 			</keep-alive>	
     </transition>
   </div>
@@ -37,8 +37,8 @@ export default {
   	return {
   		reqUrl: "http://119.23.160.41:3292"           //测试地址http://app.fssgjz.cn:2692
   	}
-  },//data闭合
-  
+  }//data闭合
+
 }
 </script>
 

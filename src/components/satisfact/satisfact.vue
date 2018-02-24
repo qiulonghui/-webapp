@@ -102,6 +102,9 @@
 					}else{
 						Toast(response.body.return_msg);
 					}
+				},(response) => {
+				  // 响应错误回调
+				  Toast('请求失败，请检查网络');
 				});	
 			},
 			initPie() {

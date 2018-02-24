@@ -91,7 +91,7 @@
 		props: ['reqUrl'],
 		data() {
 			return {
-				compRate: 60,
+				compRate: 0,
 				timeType: 1,
 				slots: [{
 					flex: 1,
@@ -182,6 +182,9 @@
 					}else{
 						Toast(response.body.return_msg);
 					}
+				},(response) => {
+				  // 响应错误回调
+				  Toast('请求失败，请检查网络');
 				});	
 			},
 			getCompList() {

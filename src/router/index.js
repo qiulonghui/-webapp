@@ -25,39 +25,54 @@ let router = new Router({
     	path: "/page2",
     	name: "page2",
     	meta: {
-	      require: true,  // 添加该字段，表示进入这个路由是需要登录的
+	      require: true  // 添加该字段，表示进入这个路由是需要登录的
 	    },
     	component: page2
     },{
     	path: "/page1", name: "page1", component: page1,
     	meta: {
-	      require: true,  // 添加该字段，表示进入这个路由是需要登录的
+	      require: true  // 添加该字段，表示进入这个路由是需要登录的
 	    },
     	children:[
     		{
     			path: 'business',
-          component: business
+          component: business,
+          meta: {
+          	back: true //允许使用物理返回键返回
+          }
     		},{
     			path: 'satisfact',
           component: satisfact,
+          meta: {
+          	back: true //允许使用物理返回键返回
+          },
           children:[
 	    		{
 	    			path: 'complaint',
-	          component: complaint
+	          component: complaint,
+	          meta: {
+	          	back: true //允许使用物理返回键返回
+	          }
 	    		}]
     		},{
     			path: 'client',
-          component: client
+          component: client,
+          meta: {
+          	back: true //允许使用物理返回键返回
+          }
     		},{
     			path: 'blanktips',
-          component: blanktips
+          component: blanktips,
+          meta: {
+          	back: true //允许使用物理返回键返回
+          }
     		}
     	]
     },{
     	path: "/page3",
     	name: "page3",
     	meta: {
-	      require: true,  // 添加该字段，表示进入这个路由是需要登录的
+	      require: true  // 添加该字段，表示进入这个路由是需要登录的
 	    },
     	component: page3
     },{
@@ -72,15 +87,33 @@ export default router;
 
 router.beforeEach((to, from, next) => {
 	var token = loadFromLocal("token",undefined);
+	window.backFlag = to.meta.back;
   if (to.meta.require) {
     if (!token) {
       next({
         path: '/login',
-        query: {redirect: to.fullPath}  // 将跳转首页时的路由path作为参数，登录成功后跳转到该路由
+        query: {redirect: to.fullPath} 
       })
     }
   }
+  
+	document.addEventListener("plusready", onPlusReady, false);
+	function onPlusReady(){
+		plus.key.addEventListener("backbutton",function(){
+			var curRounter = router.currentRoute.name;
+			if(window.backFlag){
+				router.go(-1);
+			}else{
+				var ws=plus.webview.currentWebview();
+				plus.webview.close(ws,"none");
+			}
+		});
+	}
+	
+
   next()
 })
 
+				
+    	
 

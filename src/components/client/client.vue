@@ -12,11 +12,13 @@
 				</div>
 				<div class="selectorbar">
 					<span class="picker-btn" @click="openPicker">{{pickerValue}}</span>
-					<div class="btn-group">
-						<span @click="typeDurToggle(0)" class="btn" :class="{'active':selectDurType===0}">日</span>
-						<span @click="typeDurToggle(1)" class="btn" :class="{'active':selectDurType===1}">月</span>
-						<span @click="typeDurToggle(2)" class="btn" :class="{'active':selectDurType===2}">年</span>
-					</div>
+					<keep-alive>
+						<div class="btn-group">
+							<span @click="typeDurToggle(0)" class="btn" :class="{'active':selectDurType===0}">日</span>
+							<span @click="typeDurToggle(1)" class="btn" :class="{'active':selectDurType===1}">月</span>
+							<span @click="typeDurToggle(2)" class="btn" :class="{'active':selectDurType===2}">年</span>
+						</div>
+					</keep-alive>
 				</div>
 		    <div class="page-tab-container">
 					<mt-tab-container v-model="selectType" swipeable>
@@ -166,6 +168,9 @@
 					}else{
 						Toast(response.body.return_msg);
 					}
+				},(response) => {
+				  // 响应错误回调
+				  Toast('请求失败，请检查网络');
 				});	
 			},
 			initCurve() {
