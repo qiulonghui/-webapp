@@ -9,11 +9,9 @@ export default{
 	    {
 	        name:'访问来源',
 	        type:'pie',
-	        minAngle: 30,
 	        radius : '56%',
 	        center: ['50%', '52%'],
 	        data:[].sort(function (a, b) { return a.value - b.value; }),
-	        roseType: 'radius',
 	        label: {
 	            normal: {
 	                textStyle: {

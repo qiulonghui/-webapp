@@ -251,6 +251,7 @@
 				this.requestData();
 	    },
 	    typeToggle(type) {
+	    	//业绩来源饼图类型切换函数
 	    	var pieDom = this.$refs.pie;
 				var pieChart = echarts.init(pieDom);
 				this.selectType = type;

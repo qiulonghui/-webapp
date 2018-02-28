@@ -104,8 +104,7 @@ router.beforeEach((to, from, next) => {
 			if(window.backFlag){
 				router.go(-1);
 			}else{
-				var ws=plus.webview.currentWebview();
-				plus.webview.close(ws,"none");
+				plus.runtime.quit();
 			}
 		});
 	}

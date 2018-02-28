@@ -12,7 +12,6 @@ export default{
           radius : '55%',
           center: ['47%', '50%'],
           data:[].sort(function (a, b) { return a.value - b.value; }),
-          roseType: 'radius',
           label: {
               normal: {
                   textStyle: {

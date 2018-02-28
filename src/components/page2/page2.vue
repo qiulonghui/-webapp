@@ -117,19 +117,21 @@
 			}
 		},
 		created() {
+			//由于异步获取数据，需要在Dom节点更新之后，初始化betterScroll
 			this.$nextTick(() => {
 				this._initScroll()
 			})
-			this.getNowDate();
-			this.getCompList();
+			this.getNowDate(); 
+			this.getCompList(); //从localStorage获取公司列表。
 			this.compID = this.compIdList[0];
-			this.requestData()
+			this.requestData() //页面加载完成后，请求数据。
 		},
 		mounted() {
 			this.initGauge();
 			this.initBar();
 		},
 		computed: {
+			//时间选择器选择时间限制
 			startTm() {
 				var nowYear = new Date().getFullYear();
 				var lastYear = nowYear - 1;
@@ -142,6 +144,7 @@
 			}
 		},
 		methods: {
+			//vue-resource异步请求数据
 			requestData() {
 				var token = loadFromLocal("token","");
 				var compID = this.compID;
@@ -150,6 +153,7 @@
 				this.$http.get(			
 	    		this.reqUrl+"/api/Data/getToday?token="+token+"&comp_code="+compID+"&types="+timeType+"&times="+ time,
 	  		).then((response)=>{
+	  			//请求成功后的操作
 					if(response.body.return_code===1){
 						var msg = JSON.parse(response.body.return_msg);
 						console.log(msg);
@@ -183,7 +187,7 @@
 						Toast(response.body.return_msg);
 					}
 				},(response) => {
-				  // 响应错误回调
+				  // 响应错误回调操作
 				  Toast('请求失败，请检查网络');
 				});	
 			},
@@ -235,7 +239,7 @@
 				this.optionText = values[0];
 				this.compIndex = this.slots[0].values.indexOf(values[0]);
 				this.compID = this.compIdList[this.compIndex];
-				//当前选中的公司ID保存在localStorage,提供给其他页面
+				//当前选中的公司ID保存在localStorage,提供给其他组件
 				saveToLocal("compID",this.compID)
 			},
 			//图表相关配置的方法函数
