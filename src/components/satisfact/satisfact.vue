@@ -1,9 +1,9 @@
 <template>
 	<div class="satisfact">
 		<div class="main-container" ref="pageWrapper">
-			<div class="scroll-container" >
+			<div class="scroll-container">
 				<comheader :pageText="headerText"></comheader>
-				<div class="cont-container">
+				<div class="cont-container" v-if="requestResult">
 					<div class="text-content">
 						<div class="num">{{CountSum}}人</div>
 						<div @click="test" class="label">评价总数</div>
@@ -12,17 +12,18 @@
 						<span class="picker-btn" @click="openPicker">{{pickerValue}}</span>
 					</div>
 				</div>
-				<div class="container-shadow">
+				<div class="container-shadow" v-if="requestResult">
 					<div class="chart-container" ref="pieWrapper">
 						<div  ref="pie" class="pie" style="width: 6.8rem;height: 7rem;"></div>
 					</div>
 				</div>
-				<div>
+				<div v-if="requestResult">
 					<router-link class="link" to="/page1/satisfact/complaint">
 						<div class="text1">客户投诉</div>
 						<div class="text2">共{{CountUnsatisfy}}条</div>
 					</router-link>
 				</div>
+				<div class="errorTip" v-else>网络请求失败，请重试</div>
 				<mt-datetime-picker @confirm="handleChange" ref="picker" type="date"></mt-datetime-picker>
 				<router-view :pickerValue="pickerValue" :reqUrl="reqUrl"></router-view>
 			</div>
@@ -43,6 +44,7 @@
 		props: ['reqUrl'],
 		data (){
 			return{
+				requestResult: true,
 				headerText: "满意度数据",
 				CountSum: null,
 				CountUnsatisfy: null,
@@ -86,13 +88,13 @@
 					if(response.body.return_code===1){
 						var msg = JSON.parse(response.body.return_msg);
 						console.log(msg);
+						this.requestResult = true;
 						this.CountSum = msg.CountSum;
 						this.CountUnsatisfy = msg.CountUnsatisfy;
 						
 						pieOption.series[0].data = msg.Count_list.sort(function (a, b) { return a.value - b.value; });
-						var pieDom = this.$refs.pie;
-						var pieChart = echarts.init(pieDom);	
-						pieChart.setOption(pieOption);
+						this.initPie();
+						
 					}else if(response.body.return_code === 501){
 						localStorage.removeItem('__app__');
 						this.$router.replace({
@@ -104,15 +106,17 @@
 					}
 				},(response) => {
 				  // 响应错误回调
-				  Toast('请求失败，请检查网络');
+				  this.requestResult = false;
 				});	
 			},
 			initPie() {
 				//初始化饼图图表
 				//图表相关配置参数在pieOption模块文件中
-				var pieDom = this.$refs.pie;
-				var pieChart = echarts.init(pieDom);	
-				pieChart.setOption(pieOption);
+				this.$nextTick(()=>{
+					var pieDom = this.$refs.pie;
+					var pieChart = echarts.init(pieDom);	
+					pieChart.setOption(pieOption);
+				})	
 			},
 			_initScroll() {
 	    	this.pageScroll = new BScroll(this.$refs.pageWrapper,{
@@ -135,7 +139,7 @@
 	    }
 		},
 		mounted() {
-			this.initPie();
+			
 		},
 		components: {
 			comheader
@@ -231,6 +235,13 @@
 		margin: 0 auto;
 		margin-top: -0.4rem;
 		border-radius: 0.25rem;
+	}
+	.errorTip{
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		height: 10.48rem;
+		color: #FFFFFF;
 	}
 	.satisfact .link{
 		display: flex;

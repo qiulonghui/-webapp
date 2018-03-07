@@ -20,7 +20,7 @@
 						</div>
 					</keep-alive>
 				</div>
-		    <div class="page-tab-container">
+		    <div class="page-tab-container" v-if="requestResult">
 					<mt-tab-container v-model="selectType" swipeable>
 					  <mt-tab-container-item id="1" class="cont">
 					  	<div class="text-content">
@@ -65,6 +65,7 @@
 					  </mt-tab-container-item>
 					</mt-tab-container>
 				</div>	
+				<div class="errorTip" v-else>网络请求失败，请重试</div>		
 			</div>
 		</div>
 		<mt-datetime-picker @confirm="handleChange" ref="picker" v-model="nowTime" :startDate="startTm" :endDate="endTm" type="date"></mt-datetime-picker>
@@ -84,6 +85,7 @@
 		props: ['reqUrl'],
 		data() {
 			return {
+				requestResult: true,
 				selectType: '1',
 				pickerValue: '',
 		  	selectDurType: 0,
@@ -127,6 +129,7 @@
 					if(response.body.return_code===1){
 						var msg = JSON.parse(response.body.return_msg);
 						console.log(msg);
+						this.requestResult = true;
 						this.ComeNum = msg.ComeNum;
 						this.tableDate = msg.Over_list;
 						this.OverNum = msg.OverNum;
@@ -150,15 +153,12 @@
 						curveOption.series[1].data = secondDataList;
 						console.log(secondDataList);
 						curveOption.xAxis.data = dateList;
-						var curveDom = this.$refs.cusCurve;
-						var curveChart = echarts.init(curveDom);	
-						curveChart.setOption(curveOption);
+						this.initCurve();
 						
 						pieOption.series[0].data = msg.InfoSource_list.sort(function (a, b) { return a.value - b.value; });
 						pieOption.series[0].name = this.pieName;
-						var pieDom = this.$refs.pie;
-						var pieChart = echarts.init(pieDom);	
-						pieChart.setOption(pieOption);					
+						this.initPie();
+						
 					}else if(response.body.return_code === 501){
 						localStorage.removeItem('__app__');
 						this.$router.replace({
@@ -170,22 +170,26 @@
 					}
 				},(response) => {
 				  // 响应错误回调
-				  Toast('请求失败，请检查网络');
+				  this.requestResult = false;
 				});	
 			},
 			initCurve() {
 				//初始化曲线图表
 				//图表相关配置参数在curveOption模块文件中
-				var curveDom = this.$refs.cusCurve;
-				var curveChart = echarts.init(curveDom);	
-				curveChart.setOption(curveOption);
+				this.$nextTick(()=>{
+					var curveDom = this.$refs.cusCurve;
+					var curveChart = echarts.init(curveDom);	
+					curveChart.setOption(curveOption);
+				})	
 			},
 			initPie() {
 				//初始化饼图图表
 				//图表相关配置参数在pieOption模块文件中
-				var pieDom = this.$refs.pie;
-				var pieChart = echarts.init(pieDom);	
-				pieChart.setOption(pieOption);
+				this.$nextTick(()=>{
+					var pieDom = this.$refs.pie;
+					var pieChart = echarts.init(pieDom);	
+					pieChart.setOption(pieOption);
+				})
 			},
 	    typeToggle(type) {
 				this.selectType = type;
@@ -222,10 +226,6 @@
 				this.pickerValue = date;
 				this.requestData();
 	    }
-		},
-		mounted() {
-			this.initCurve();
-			this.initPie();
 		}
 	}
 	
@@ -286,6 +286,13 @@
 	}
 	.header .nav div.active{
 		background-image: linear-gradient(-90deg, #817FE2 0%, #72DEE1 100%);
+	}
+	.errorTip{
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		height: 10.48rem;
+		color: #FFFFFF;
 	}
 	.selectorbar{
 		height: 0.42rem;

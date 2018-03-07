@@ -12,7 +12,7 @@
 						<span @click="typeDurToggle(2)" class="btn" :class="{'active':selectDurType===2}">年</span>
 					</div>
 				</div>
-				<div class="volume">
+				<div class="volume" v-if="requestResult">
 					<div class="text-content">
 						<div class="actual">
 							<div class="num"><span>{{ResultAmt}}</span>万</div>
@@ -30,7 +30,7 @@
 					</div>
 					<div class="volume-curve" ref="curve" style="width: 8.2rem; height: 5rem;"></div>
 				</div>
-				<div class="container">
+				<div class="container" v-if="requestResult">
 					<div class="tab">
 						<div @click="typeToggle(0)" class="tab-item" :class="{'active':selectType===0}">科室业绩</div>
 						<div @click="typeToggle(1)" class="tab-item" :class="{'active':selectType===1}">客户来源业绩</div>
@@ -39,6 +39,7 @@
 						<div class="pie" ref="pie" style="width: 6.9rem;height: 6.3rem;"></div>
 					</div>
 				</div>
+				<div class="errorTip" v-else>网络请求失败，请重试</div>
 			</div>
 		</div>
 		<mt-datetime-picker @confirm="handleChange" ref="picker" v-model="nowTime" :startDate="startTm" :endDate="endTm" type="date"></mt-datetime-picker>
@@ -54,11 +55,11 @@
 	import pieOption from './pieOption';
 	import curveOption from './curveOption';
 	import { Toast } from 'mint-ui';
-	
 	export default {
 		props: ['reqUrl'],
 		data (){
 			return {
+				requestResult: true,
 				ResultAmt: "",
 				TargetValue: "",
 				Pro_TR: "",
@@ -97,13 +98,16 @@
 				var token = loadFromLocal("token","");
 				var compID = loadFromLocal("compID","");
 				var timeType = this.timeType;
-				var time = this.pickerValue
+				var time = this.pickerValue;
+
 				this.$http.get(			
 	    		this.reqUrl+"/api/Data/getScore?token="+token+"&comp_code="+compID+"&types="+timeType+"&times="+ time,
 	  		).then((response)=>{
+	  			//成功后的回调
 					if(response.body.return_code===1){
 						var msg = JSON.parse(response.body.return_msg);
 						console.log(msg);
+						this.requestResult = true;
 						this.ResultAmt = msg.ResultAmt;
 						this.TargetValue = msg.TargetValue;
 						this.Pro_TR = msg.Pro_TR;
@@ -152,8 +156,14 @@
 						  	var y = nyr.substr(5,2);
 						  	var r = nyr.substr(8,2);
 						  	var n2 = n-1+"";
-					  		res+= params[0].axisValue + ": " + params[0].data +"万" +"</br>";
-						  	res+= n2 + "-" + y + ": " + params[1].data +"万" +"</br>";	
+						  	if(!params[1]&&params[0].seriesName==="去年"){
+						  		res = n2 + "-" + y + ": " + params[0].data +"万" +"</br>";	
+						  	}else if(!params[1]&&params[0].seriesName==="今年"){
+						  		res = params[0].axisValue + ": " + params[0].data +"万" +"</br>";
+						  	}else{
+						  		res+= params[0].axisValue + ": " + params[0].data +"万" +"</br>";
+						  		res+= n2 + "-" + y + ": " + params[1].data +"万" +"</br>";	
+						  	}
 						  	return res;
 							}
 							curveOption.tooltip.formatter = formatterFn ;
@@ -167,15 +177,19 @@
 						  	var y = nyr.substr(5,2);
 						  	var r = nyr.substr(8,2);
 						  	var n2 = n-1+"";
-					  		res+= params[0].axisValue + ": " + params[0].data +"万" +"</br>";
-						  	res+= n2 + "-" + y + "-" + r + ": " + params[1].data +"万" +"</br>";	
+					  		if(!params[1]&&params[0].seriesName==="去年"){
+						  		res = n2 + "-" + y + "-" + r + ": " + params[0].data +"万" +"</br>";	
+						  	}else if(!params[1]&&params[0].seriesName==="今年"){
+						  		res = params[0].axisValue + ": " + params[0].data +"万" +"</br>";
+						  	}else{
+						  		res+= params[0].axisValue + ": " + params[0].data +"万" +"</br>";
+						  		res+= n2 + "-" + y + "-" + r + ": " + params[1].data +"万" +"</br>";	
+						  	}
 						  	return res;
 							}
-							curveOption.tooltip.formatter = formatterFn ;
+							curveOption.tooltip.formatter = formatterFn;
 						}
-						var curveDom = this.$refs.curve;
-						var curveChart = echarts.init(curveDom);	
-						curveChart.setOption(curveOption);
+						this.initCurve();
 						
 						if(!msg.Dept_list){
 							var DeptList = [];
@@ -191,11 +205,9 @@
 							this.InfoSource_list = [];
 						}else{
 							this.InfoSource_list = msg.InfoSource_list;
-						}
+						}					
+						this.initPie();
 						
-						var pieDom = this.$refs.pie;
-						var pieChart = echarts.init(pieDom);	
-						pieChart.setOption(pieOption);
 					}else if(response.body.return_code === 501){
 						localStorage.removeItem('__app__');
 						this.$router.replace({
@@ -207,23 +219,26 @@
 					}
 				},(response) => {
 				  // 响应错误回调
-				  Toast('请求失败，请检查网络');
+				  this.requestResult = false;
 				});	
 			},
 			initCurve() {
 				//初始化曲线图表
 				//图表相关配置参数在curveOption模块文件中
-				var curveDom = this.$refs.curve;
-				var curveChart = echarts.init(curveDom);	
-
-				curveChart.setOption(curveOption);
+				this.$nextTick(()=>{
+					var curveDom = this.$refs.curve;
+					var curveChart = echarts.init(curveDom);	
+					curveChart.setOption(curveOption);
+				})
 			},
 			initPie() {
 				//初始化饼图图表
 				//图表相关配置参数在pieOption模块文件中
-				var pieDom = this.$refs.pie;
-				var pieChart = echarts.init(pieDom);	
-				pieChart.setOption(pieOption);
+				this.$nextTick(()=>{
+					var pieDom = this.$refs.pie;
+					var pieChart = echarts.init(pieDom);	
+					pieChart.setOption(pieOption);
+				})
 			},
 			typeDurToggle(type) {
 				this.selectDurType = type;
@@ -268,10 +283,6 @@
 				}
 			}
 		},
-		mounted() {
-			this.initCurve();
-			this.initPie();
-		},
 		components: {
 			comheader
 		}
@@ -306,6 +317,13 @@
   background-size: 0.14rem 0.19rem;
   background-position: right 0.1rem;
   padding-right: 0.25rem;
+}
+.errorTip{
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 10.48rem;
+	color: #FFFFFF;
 }
 .selectorbar .btn-group{
 	line-height: 0.42rem;

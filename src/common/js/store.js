@@ -16,9 +16,6 @@ export function loadFromLocal(key,def){
 		return def;
 	}
 	app = JSON.parse(app);
-	if(!app){
-		return def;
-	}
 	let ret = app[key];
 	return ret || def;
 };

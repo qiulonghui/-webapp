@@ -1,14 +1,14 @@
 <template>
 	<div class="day-indicator">
 		<div class="container" ref="pageWrapper">
-			<div class="scroll-container">
+			<div class="scroll-container" >
 				<!--better-scroll滚动内容部分-->
 				<div class="header">
 					<div class="item"></div>
 					<div class="item date"><button @click="openPicker">{{pickerValue}}</button></div>
 					<div class="item selector"><button @click="optionShow">{{optionText}}</button></div>
 				</div>
-				<div class="completion-rate-wrap">
+				<div class="completion-rate-wrap" v-if="requestResult">
 					<div class="completion-rate">
 						<div class="cr-title-wrap">
 							<div class="title">今日完成率</div>
@@ -57,11 +57,12 @@
 						</div>
 					</div>
 				</div>
-				<div class="day-satis">
+				<div class="day-satis" v-if="requestResult">
 					<div class="title">客户满意度</div>
 					<div class="sub-title">Customer satisfaction</div>
 					<div class="satis-chart" ref="satisChart" style="width: 8.15rem; height: 3.3rem; position: absolute; margin-top: -0.8rem; margin-left: -1.2rem;"></div>
 				</div>
+				<div class="errorTip" v-else>网络请求失败，请重试</div>
 			</div>
 		</div>
 		<!--弹出选择器部分-->
@@ -91,6 +92,7 @@
 		props: ['reqUrl'],
 		data() {
 			return {
+				requestResult: true,
 				compRate: 0,
 				timeType: 1,
 				slots: [{
@@ -125,10 +127,7 @@
 			this.getCompList(); //从localStorage获取公司列表。
 			this.compID = this.compIdList[0];
 			this.requestData() //页面加载完成后，请求数据。
-		},
-		mounted() {
-			this.initGauge();
-			this.initBar();
+			
 		},
 		computed: {
 			//时间选择器选择时间限制
@@ -150,6 +149,9 @@
 				var compID = this.compID;
 				var timeType = this.timeType;
 				var time = this.pickerValue
+				var bearerToken = loadFromLocal("bearerToken","");
+				var tokenType = loadFromLocal("tokenType","");
+				
 				this.$http.get(			
 	    		this.reqUrl+"/api/Data/getToday?token="+token+"&comp_code="+compID+"&types="+timeType+"&times="+ time,
 	  		).then((response)=>{
@@ -157,6 +159,7 @@
 					if(response.body.return_code===1){
 						var msg = JSON.parse(response.body.return_msg);
 						console.log(msg);
+						this.requestResult = true;
 						this.ResultAmt = msg.ResultAmt;
 						this.TargetValue = msg.TargetValue;
 						this.compRate = msg.Pro_TR;
@@ -165,19 +168,16 @@
 						this.OverFifteen = msg.OverFifteen;
 						this.OverThirty = msg.OverThirty;
 						this.OverFortyFive = msg.OverFortyFive; 
-						
+			
 						gaugeOption.series[1].data[0].value = msg.Pro_TR;
-						var gaugeDom = this.$refs.gauge;
-						var gaugeChart = echarts.init(gaugeDom);
-						gaugeChart.setOption(gaugeOption);
+						this.initGauge();
 						
 						barOption.series[0].data[0].value = msg.Pro_Unsatisfy;
 						barOption.series[0].data[1].value = msg.Pro_YiBan;
 						barOption.series[0].data[2].value = msg.Pro_Satisfy;
-						var barDom = this.$refs.satisChart;
-						var satisChart = echarts.init(barDom);
-						satisChart.setOption(barOption);
+						this.initBar();
 					}else if(response.body.return_code === 501){
+						//返回501 token失效，需重新登录
 						localStorage.removeItem('__app__');
 						this.$router.replace({
                 path: '/login',
@@ -188,7 +188,7 @@
 					}
 				},(response) => {
 				  // 响应错误回调操作
-				  Toast('请求失败，请检查网络');
+				  this.requestResult = false;
 				});	
 			},
 			getCompList() {
@@ -244,16 +244,20 @@
 			},
 			//图表相关配置的方法函数
 			initGauge() {
-				var gaugeDom = this.$refs.gauge;
-				var gaugeChart = echarts.init(gaugeDom);
-				//图表相关配置参数在gaugeOption模块文件中
-				gaugeChart.setOption(gaugeOption);
+				this.$nextTick(() => {
+					var gaugeDom = this.$refs.gauge;
+					var gaugeChart = echarts.init(gaugeDom);
+					//图表相关配置参数在gaugeOption模块文件中
+					gaugeChart.setOption(gaugeOption);
+				})
 			},
 			initBar() {
-				var barDom = this.$refs.satisChart;
-				var satisChart = echarts.init(barDom);
-				//图表相关配置参数在barOption模块文件中
-				satisChart.setOption(barOption);
+				this.$nextTick(() => {
+					var barDom = this.$refs.satisChart;
+					var satisChart = echarts.init(barDom);
+					//图表相关配置参数在barOption模块文件中
+					satisChart.setOption(barOption);
+				})
 			}
 		}
 	}
@@ -333,7 +337,13 @@
 		border-style: solid;
 		transform: translateY(-50%) matrix(0.71, 0.71, -0.71, 0.71, 0, 0);
 	}
-	
+	.errorTip{
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		height: 10.48rem;
+		color: #FFFFFF;
+	}
 	.mt-picker-wrapper {
 		width: 100%;
 		position: fixed;

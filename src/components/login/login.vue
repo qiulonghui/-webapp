@@ -16,8 +16,11 @@
 </template>
 
 <script>
+	import Vue from 'vue';
 	import { Toast } from 'mint-ui';
-	import {saveToLocal,loadFromLocal } from '../../common/js/store'
+	import {saveToLocal,loadFromLocal } from '../../common/js/store';
+	import {Base64Encode} from './Base64Encode';
+	
 	export default {
 		props: ['reqUrl'],
 		data() {
@@ -28,15 +31,42 @@
 				verCode: ''
 			}
 		},
+		created() {
+			localStorage.removeItem('__app__');
+			//获取用户授权Token请求headers
+			var clientId = "kkapi_shdata";
+  		var clientSecret = "*SH888_kk&%API#";
+
+			var bearerToken = loadFromLocal("bearerToken","");
+			var tokenType = "";
+			if(bearerToken===""){
+				Vue.http.options.headers = {
+		 			"Authorization": "Basic " + Base64Encode(clientId + ":" + clientSecret),
+		      "Content-Type": "application/json",
+		      "Accept": "application/json"
+				}
+				this.$http.post(
+	    		this.reqUrl+"/Token",
+	    		{"grant_type": "client_credentials"},
+	    		{emulateJSON : true}
+    		).then((response)=>{
+    			 // 响应成功回调
+    			bearerToken = response.body.access_token;
+    			tokenType = response.body.token_type;
+					saveToLocal("bearerToken",bearerToken);
+					saveToLocal("tokenType",tokenType);
+					alert("requestBearerToken")
+				},(response) => {
+				  // 响应错误回调
+				  Toast('请求失败，请检查网络1');
+				})
+			}
+		},
 		computed: {
 			toggle: function(){
 				var resendToggle = !this.verCodeToggle;
 				return resendToggle;
 			}
-		},
-		beforeRouteLeave (to, from , next) {
-		 window.location.reload();
-		 next();
 		},
 
 		methods:{
@@ -93,6 +123,16 @@
 			login() {
 				var vpResult = this._veriPhone;
 				var vcResult = this._veriCode;
+				var bearerToken = loadFromLocal("bearerToken","");
+				var tokenType = loadFromLocal("tokenType","");
+				
+				Vue.http.options.headers = {
+		 			"Authorization": tokenType +" "+bearerToken,
+		      "Content-Type": "application/json",
+		      "Accept": "application/json"
+				}
+
+				//异步发送登录请求
 				if(vpResult()&&vcResult()===true){
 					this.$http.post(
 		    		this.reqUrl+"/api/User/Login",
@@ -107,6 +147,7 @@
 							this.$router.replace({
                     path: '/page2'
                });  
+              window.location.reload();
 						}else{
 							Toast(response.body.return_msg);
 						}

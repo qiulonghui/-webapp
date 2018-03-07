@@ -1,6 +1,6 @@
 <template>
 	<div class="user-center">
-		<div class="container">
+		<div class="container" v-if="requestResult">
 			<div class="user-info-wrap">
 				<img class="user-avatar" src="../page2/img/home_tab_indicator_highlighted@1.5x.png"/>
 				<div class="user-info">
@@ -12,6 +12,7 @@
 				<div class="sign-out" @click="signOut">账号登出</div>
 			</router-link>
 		</div>
+		<div class="errorTip" v-else>网络请求失败，请重试</div>
 	</div>
 </template>
 
@@ -22,6 +23,7 @@
 		props: ['reqUrl'],
 		data() {
 			return {
+				requestResult: true,
 				name: "",
 				job: ""
 			}
@@ -34,6 +36,7 @@
   			if(response.body.return_code===1){
   				console.log(response.body)
 	  			var msg = JSON.parse(response.body.return_msg);
+	  			this.requestResult = true;
 	  			this.name = msg.name;
 	  			this.job = msg.job;
   			}else if(response.body.return_code === 501){
@@ -47,7 +50,7 @@
   			}
 			},(response) => {
 			  // 响应错误回调
-			  Toast('请求失败，请检查网络');
+			  this.requestResult = false;
 			});	
 		},
 		methods: {
@@ -89,6 +92,13 @@
     background-position: 0 bottom;
     padding-bottom: 0.3rem;
     margin-bottom: 0.4rem;
+	}
+	.errorTip{
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		height: 10.48rem;
+		color: #FFFFFF;
 	}
 	.user-center .container .user-avatar{
 		width: 1.2rem;

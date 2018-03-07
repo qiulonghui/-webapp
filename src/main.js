@@ -19,6 +19,33 @@ Vue.config.productionTip = false
 Vue.use(MintUI)
 Vue.use(VueResource)
 
+var bearerToken = loadFromLocal("bearerToken","");
+var tokenType = loadFromLocal("tokenType","");
+				
+Vue.http.options.headers = {
+	"Authorization": tokenType +" "+bearerToken,
+  "Content-Type": "application/json",
+  "Accept": "application/json"
+}
+
+Vue.http.interceptors.push((request, next) => {
+	// 弹出系统等待对话框
+	if(window.plus){
+		plusReady();
+	}else{
+		document.addEventListener("plusready",plusReady,false);
+	}
+	function plusReady(){
+		alert("create")
+		window.w = plus.nativeUI.showWaiting( "加载中..." );
+	}
+	next((response) => {
+	  if(window.w) {
+	  	alert("close")
+	 	  window.w.close();
+	  }
+	})
+})
 
 /* eslint-disable no-new */
 new Vue({
