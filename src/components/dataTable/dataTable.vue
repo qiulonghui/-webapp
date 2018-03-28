@@ -6,13 +6,13 @@
     ]">
       <div class="Label"></div>
       <div class="Label">{{table.Label1}}</div>
-      <div class="Label">{{table.Label2}}</div>
+      <div v-show="!(timeType === 3)" class="Label">{{table.Label2}}</div>
     </div>
     <div class="table-body" v-if="table.chartType === 'line'">
       <div v-for="(tableItem,index) in table.tableList" :key="index" class="row">
         <div class="colum">{{tableItem.date}}</div>
         <div class="colum">{{tableItem.thisData}}</div>
-        <div class="colum">{{tableItem.lastData}}</div>
+        <div v-show="!(timeType === 3)" class="colum">{{tableItem.lastData}}</div>
       </div>
     </div>
     <div class="table-body" v-else-if="table.chartType === 'pie'">
@@ -29,6 +29,10 @@
 <script>
 export default {
   props: {
+    timeType: {
+      type: Number,
+      default: 1
+    },
     table: {
       type: Object,
       required: true
@@ -41,7 +45,7 @@ export default {
 .table-wrap{
   width: 100%;
   text-align: center;
-  margin-bottom: 0.35rem;
+  /* margin-bottom: 0.35rem; */
   font-size: 0.26rem;
   color: #ffffff;
 }

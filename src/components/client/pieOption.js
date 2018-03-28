@@ -11,8 +11,8 @@ export default{
 	        type:'pie',
 	        startAngle: 60,
 	        clockwise: false,
-	        radius : '56%',
-	        center: ['50%', '52%'],
+	        radius : '65%',
+	        center: ['49%', '58%'],
 	        data:[].sort(function (a, b) { return b.value - a.value; }),
 	        label: {
 	            normal: {

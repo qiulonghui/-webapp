@@ -15,7 +15,7 @@
 				<div class="container-shadow" v-if="requestResult">
 					<div class="chart-container" ref="pieWrapper">
 						<div v-show="isChart" ref="pie" class="pie" style="width: 6.8rem;height: 7rem;"></div>
-            <div v-show="!isChart" class="table" style="margin-top:0.5rem">
+            <div v-show="!isChart" class="table" style="margin-top:0.9rem">
               <dataTable :table="table1"></dataTable>
             </div>
 					</div>
@@ -28,11 +28,11 @@
 				</div>
 				<div class="errorTip" v-else>网络请求失败，请重试</div>
 				<mt-datetime-picker @confirm="handleChange" ref="picker" type="date"></mt-datetime-picker>
-				<router-view :pickerValue="pickerValue" :reqUrl="reqUrl"></router-view>
 			</div>
 		</div>
 		<mt-datetime-picker @confirm="handleChange" ref="picker" v-model="nowTime" :startDate="startTm" :endDate="endTm" type="date"></mt-datetime-picker>
     <chartToggleButton @toggle="toggle"></chartToggleButton>
+    <router-view :pickerValue="pickerValue" :reqUrl="reqUrl"></router-view>
 	</div>
 </template>
 
@@ -102,10 +102,9 @@
 						console.log(msg);
 						this.requestResult = true;
 						this.CountSum = msg.CountSum;
-						this.CountUnsatisfy = msg.CountUnsatisfy;
-
-            var CountUnsatisfy2 =  arrModify(this.CountUnsatisfy,"人");
-            this.table1.tableList = CountUnsatisfy2;
+            this.CountUnsatisfy = msg.CountUnsatisfy;
+            var Count_list2 =  arrModify(msg.Count_list,"人");
+            this.table1.tableList = Count_list2;
 						pieOption.series[0].data = msg.Count_list.sort(function (a, b) { return b.value - a.value; });
 						this.initPie();
 

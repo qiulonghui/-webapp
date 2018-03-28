@@ -29,7 +29,6 @@ export default {
     text-align: center;
     font-size: 0.3rem;
     position: fixed;
-    z-index: 999999999;
     top: 52%;
     right: 0;
     color: #ffffff;

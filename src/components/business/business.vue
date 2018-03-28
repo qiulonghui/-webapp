@@ -29,8 +29,8 @@
 						</div>
 					</div>
 					<div v-show="isChart" class="volume-curve" ref="curve" style="width: 8.2rem; height: 5rem;"></div>
-          <div v-show="!isChart" class="table" style="margin-top:0.5rem">
-            <dataTable :table="table1"></dataTable>
+          <div v-show="!isChart" class="table" style="margin-top:0.5rem;margin-bottom:0.35rem">
+            <dataTable :table="table1" :timeType="timeType"></dataTable>
           </div>
 				</div>
 				<div class="container" v-if="requestResult">
@@ -40,7 +40,7 @@
 					</div>
 					<div class="content">
 						<div v-show="isChart" class="pie" ref="pie" style="width: 6.9rem;height: 5.3rem;"></div>
-            <dataTable v-show="!isChart" :table="table2" style="margin-top:0.3rem"></dataTable>
+            <dataTable v-show="!isChart" :table="table2" style="margin-top:0.3rem;"></dataTable>
 					</div>
 				</div>
 				<div class="errorTip" v-else>网络请求失败，请重试</div>

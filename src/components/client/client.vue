@@ -26,7 +26,7 @@
 								<div class="label">门诊总数</div>
 							</div>
 							<div v-show="isChart" class="cus-curve" ref="cusCurve" style="width: 8.2rem; height: 4.85rem;"></div>
-              <div v-show="!isChart" class="table" style="margin-top:0.5rem">
+              <div v-show="!isChart" class="table" style="margin-top:0.5rem;margin-bottom:0.35rem">
                 <dataTable :table="table1"></dataTable>
               </div>
 							<div class="container">
@@ -34,7 +34,7 @@
 									<div class="tab-item">初诊客户来源</div>
 								</div>
 								<div class="content">
-									<div v-show="isChart" class="pie" ref="pie" style="width: 6.9rem;height: 6.3rem;"></div>
+									<div v-show="isChart" class="pie" ref="pie" style="width: 6.9rem;height: 5.62rem;"></div>
                   <dataTable v-show="!isChart" :table="table2" style="margin-top:0.3rem"></dataTable>
 								</div>
 							</div>

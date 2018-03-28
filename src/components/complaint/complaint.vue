@@ -9,12 +9,12 @@
 						<div class="label">客户投诉</div>
 					</div>
 					<div class="list-container">
-						<div class="item" v-for="item in Satis_list">
+						<div class="item" v-for="(item,index) in Satis_list" :key="index">
 							<span class="name">{{item.name}}</span>
 							<span>:</span>
 							<span class="text">{{item.describe}}</span>
 						</div>
-						
+
 					</div>
 				</div>
 			</div>
@@ -27,13 +27,13 @@
 	import comheader from '../header/header';
 	import {saveToLocal,loadFromLocal } from '../../common/js/store';
 	import { Toast } from 'mint-ui';
-	
+
 	export default {
 		props: ['reqUrl','pickerValue'],
 		data: function(){
 			return {
 				headerText: "满意度数据",
-				CountUnsatisfy: 0, 
+				CountUnsatisfy: 0,
 				Satis_list: [],
 				timeType: 1
 			}
@@ -50,7 +50,7 @@
 				var compID = loadFromLocal("compID","");
 				var timeType = this.timeType;
 				var time = this.pickerValue
-				this.$http.get(			
+				this.$http.get(
 	    		this.reqUrl+"/api/Data/getSatisList?token="+token+"&comp_code="+compID+"&types="+timeType+"&times="+ time,
 	  		).then((response)=>{
 					if(response.body.return_code===1){
@@ -71,7 +71,7 @@
 				},(response) => {
 				  // 响应错误回调
 				  Toast('请求失败，请检查网络');
-				});	
+				});
 			},
 			_initScroll() {
 	    	this.pageScroll = new BScroll(this.$refs.pageWrapper,{
@@ -88,7 +88,6 @@
 <style>
 	.complaint{
 		position: fixed;
-		z-index: 10000000;
 		top: 0;
 		bottom: 0;
 		left: 0;
