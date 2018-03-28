@@ -11,6 +11,16 @@
 			window.onresize = function(){
 				document.documentElement.style.fontSize = document.documentElement.clientWidth/ 750*100 + 'px';
 			}
+			function plusReady(){
+				// 设置系统状态栏背景颜色
+				plus.navigator.setStatusBarBackground('#333B5A');
+				plus.navigator.setStatusBarStyle('light');
+			}
+			if(window.plus){
+				plusReady();
+			}else{
+				document.addEventListener('plusready', plusReady, false);
+			}
 		</script>
 		<link rel="stylesheet" type="text/css" href="static/css/reset.css"/>
   </head>

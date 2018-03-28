@@ -2,11 +2,11 @@ export function saveToLocal(key,value){
 	let app = window.localStorage.__app__;
 	if(!app){
 		app = {};
-		app[key] = value; 
+		app[key] = value;
 	}else{
 		app = JSON.parse(app);
 	}
-	app[key] = value; 
+	app[key] = value;
 	window.localStorage.__app__ = JSON.stringify(app);
 };
 

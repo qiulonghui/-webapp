@@ -85,18 +85,21 @@ let router = new Router({
 
 export default router;
 
+//页面跳转前的路由控制
 router.beforeEach((to, from, next) => {
+  //未登录时跳转到登陆页面
 	var token = loadFromLocal("token",undefined);
 	window.backFlag = to.meta.back;
-  if (to.meta.require) {
-    if (!token) {
-      next({
-        path: '/login',
-        query: {redirect: to.fullPath} 
-      })
-    }
-  }
-  
+  // if (to.meta.require) {
+  //   if (!token) {
+  //     next({
+  //       path: '/login',
+  //       query: {redirect: to.fullPath}
+  //     })
+  //   }
+  // }
+
+  //H5+调用安卓物理返回按钮键，控制界面路由
 	document.addEventListener("plusready", onPlusReady, false);
 	function onPlusReady(){
 		plus.key.addEventListener("backbutton",function(){
@@ -108,10 +111,10 @@ router.beforeEach((to, from, next) => {
 			}
 		});
 	}
-	
+
   next()
 })
 
-				
-    	
+
+
 

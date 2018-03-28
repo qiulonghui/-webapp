@@ -60,7 +60,7 @@
 				<div class="day-satis" v-if="requestResult">
 					<div class="title">客户满意度</div>
 					<div class="sub-title">Customer satisfaction</div>
-					<div class="satis-chart" ref="satisChart" style="width: 8.15rem; height: 3.3rem; position: absolute; margin-top: -0.8rem; margin-left: -1.2rem;"></div>
+					<div class="satis-chart" ref="satisChart" style="width: 8.15rem; height: 2.3rem; position: absolute; margin-top: -0.8rem; margin-left: -1.2rem;"></div>
 				</div>
 				<div class="errorTip" v-else>网络请求失败，请重试</div>
 			</div>
@@ -123,11 +123,11 @@
 			this.$nextTick(() => {
 				this._initScroll()
 			})
-			this.getNowDate(); 
+			this.getNowDate();
 			this.getCompList(); //从localStorage获取公司列表。
 			this.compID = this.compIdList[0];
 			this.requestData() //页面加载完成后，请求数据。
-			
+
 		},
 		computed: {
 			//时间选择器选择时间限制
@@ -151,8 +151,8 @@
 				var time = this.pickerValue
 				var bearerToken = loadFromLocal("bearerToken","");
 				var tokenType = loadFromLocal("tokenType","");
-				
-				this.$http.get(			
+
+				this.$http.get(
 	    		this.reqUrl+"/api/Data/getToday?token="+token+"&comp_code="+compID+"&types="+timeType+"&times="+ time,
 	  		).then((response)=>{
 	  			//请求成功后的操作
@@ -167,17 +167,16 @@
 						this.FirstNum = msg.FirstNum;
 						this.OverFifteen = msg.OverFifteen;
 						this.OverThirty = msg.OverThirty;
-						this.OverFortyFive = msg.OverFortyFive; 
-			
+						this.OverFortyFive = msg.OverFortyFive;
+
 						gaugeOption.series[1].data[0].value = msg.Pro_TR;
 						this.initGauge();
-						
+
 						barOption.series[0].data[0].value = msg.Pro_Unsatisfy;
-						barOption.series[0].data[1].value = msg.Pro_YiBan;
-						barOption.series[0].data[2].value = msg.Pro_Satisfy;
 						this.initBar();
 					}else if(response.body.return_code === 501){
 						//返回501 token失效，需重新登录
+						Toast("身份已过期请重新登录");
 						localStorage.removeItem('__app__');
 						this.$router.replace({
                 path: '/login',
@@ -189,7 +188,7 @@
 				},(response) => {
 				  // 响应错误回调操作
 				  this.requestResult = false;
-				});	
+				});
 			},
 			getCompList() {
 				var compNameList = [];
@@ -201,7 +200,10 @@
 					compNameList.push(cpName);
 					compIdList.push(cpId);
 				}
+				//公司列表选择器赋值
 				this.slots[0].values = compNameList;
+				// 公司ID列表赋值
+				// 用于请求数据
 				this.compIdList = compIdList;
 			},
 			getNowDate() {
@@ -274,7 +276,7 @@
 		overflow: hidden;
 		background-image: linear-gradient(-180deg, #333B5A 0%, #333B5A 10%, #5D669F 100%);
 	}
-	
+
 	.container {
 		position: absolute;
 		top: 0;
@@ -283,11 +285,11 @@
 		right: 0;
 		overflow: hidden;
 	}
-	
+
 	.scroll-container {
 		padding-bottom: 0.3rem;
 	}
-	
+
 	.header {
 		padding: 0 0.45rem;
 		height: 0.88rem;
@@ -295,14 +297,14 @@
 		justify-content: center;
 		align-items: center;
 	}
-	
+
 	.header .item {
 		width: 2.2rem;
 		display: flex;
 		justify-content: center;
 		position: relative;
 	}
-	
+
 	.header .item button {
 		font-size: 0.3rem;
 		line-height: 0.42rem;
@@ -315,14 +317,14 @@
 		border: none;
 		outline: none;
 	}
-	
+
 	.header .item.date button {
 		background-image: url(../../assets/home_nav_time@1.5x.png);
 		background-repeat: no-repeat;
 		background-size: 0.14rem 0.19rem;
 		background-position: right 0.12rem;
 	}
-	
+
 	.header .item.selector:after {
 		content: "";
 		position: absolute;
@@ -354,12 +356,12 @@
 		transition: all 0.2s linear;
 		transform: translate3d(0, 0, 0);
 	}
-	
+
 	.optionslide-enter,
 	.optionslide-leave-to {
 		transform: translate3d(0, 100%, 0);
 	}
-	
+
 	.mt-picker-mask {
 		position: fixed;
 		top: 0;
@@ -369,21 +371,21 @@
 		opacity: 0.5;
 		background: #000;
 	}
-	
+
 	.btn-wrapper {
 		display: flex;
 		height: 40px;
 		line-height: 40px;
 		border-bottom: solid 1px #eaeaea;
 	}
-	
+
 	.btn-wrapper .btn {
 		flex: 1;
 		text-align: center;
 		color: #26A2FF;
 		font-size: 16px;
 	}
-	
+
 	.completion-rate {
 		position: relative;
 		width: 6.6rem;
@@ -395,20 +397,20 @@
 		margin-top: 0.2rem;
 		box-shadow: 0 -15px 30px 0px #3D476B inset;
 	}
-	
+
 	.completion-rate .cr-title-wrap {
 		position: absolute;
 		top: 0.3rem;
 		left: 0.3rem;
 	}
-	
+
 	.completion-rate .cr-title-wrap .title {
 		font-size: 0.24rem;
 		line-height: 0.33rem;
 		display: flex;
 		align-items: center;
 	}
-	
+
 	.completion-rate .cr-title-wrap .title:before {
 		content: "";
 		display: inline-block;
@@ -418,7 +420,7 @@
 		border-radius: 0.05rem;
 		margin-right: 0.08rem;
 	}
-	
+
 	.half-pie {
 		position: absolute;
 		bottom: 0;
@@ -434,11 +436,11 @@
 		font-size: 0.64rem;
 		line-height: 1.5rem;
 	}
-	
+
 	.half-pie span.fh {
 		font-size: 0.24rem;
 	}
-	
+
 	.completion-rate .sum {
 		position: absolute;
 		left: 0;
@@ -449,7 +451,7 @@
 		color: #FFFFFF;
 		font-size: 0.24rem;
 	}
-	
+
 	.shadow {
 		width: 6.6rem;
 		height: 1.2rem;
@@ -461,7 +463,7 @@
 		z-index: -1;
 		overflow: hidden;
 	}
-	
+
 	.left-shadow {
 		width: 3.3rem;
 		height: 1.2rem;
@@ -470,7 +472,7 @@
 		left: 0;
 		overflow: hidden;
 	}
-	
+
 	.right-shadow {
 		width: 3.3rem;
 		height: 1.2rem;
@@ -479,7 +481,7 @@
 		right: 0;
 		overflow: hidden;
 	}
-	
+
 	.right-shadow:after {
 		content: "";
 		width: 3.3rem;
@@ -490,7 +492,7 @@
 		transform-origin: bottom right;
 		transform: skew(60deg);
 	}
-	
+
 	.left-shadow:before {
 		content: "";
 		width: 3.3rem;
@@ -501,7 +503,7 @@
 		transform-origin: bottom right;
 		transform: skew(-60deg);
 	}
-	
+
 	.day-indicator .text-content {
 		width: 7.05rem;
 		margin-left: 0.45rem;
@@ -509,14 +511,14 @@
 		font-size: 0;
 		color: #FFFFFF;
 	}
-	
+
 	.day-indicator .amount {
 		display: inline-block;
 		width: 2.78rem;
 		font-size: 0.2rem;
 		position: relative;
 	}
-	
+
 	.day-indicator .amount:after {
 		content: "";
 		display: block;
@@ -527,14 +529,14 @@
 		height: 0.6rem;
 		background-color: #817EE2;
 	}
-	
+
 	.day-indicator .waiting-time {
 		display: inline-block;
 		width: 4.27rem;
 		font-size: 0.2rem;
 		vertical-align: top;
 	}
-	
+
 	.day-indicator .amount .title,
 	.day-indicator .waiting-time .title {
 		font-size: 0.24rem;
@@ -542,7 +544,7 @@
 		display: flex;
 		align-items: center;
 	}
-	
+
 	.day-indicator .amount .title:before {
 		content: "";
 		display: inline-block;
@@ -552,7 +554,7 @@
 		border-radius: 0.05rem;
 		margin-right: 0.08rem;
 	}
-	
+
 	.day-indicator .waiting-time .title:before {
 		content: "";
 		display: inline-block;
@@ -562,55 +564,55 @@
 		border-radius: 0.05rem;
 		margin-right: 0.08rem;
 	}
-	
+
 	.day-indicator .amount .sub-title,
 	.day-indicator .waiting-time .sub-title {
 		line-height: 0.28rem;
 	}
-	
+
 	.day-indicator .amount .row,
 	.day-indicator .waiting-time .row {
 		margin-top: 0.18rem;
 		display: flex;
 	}
-	
+
 	.day-indicator .amount .row {
 		width: 2.8rem;
 		text-align: center;
 		margin-left: -0.4rem;
 	}
-	
+
 	.day-indicator .row .item {
 		flex: 1;
 		display: flex;
 		flex-direction: column;
 	}
-	
+
 	.day-indicator .item .num {
 		line-height: 0.56rem;
 		font-size: 0.4rem;
 		font-weight: 300;
 	}
-	
+
 	.day-indicator .item .label {
 		font-size: 0.24rem;
 		line-height: 0.24rem;
 	}
-	
+
 	.day-indicator .waiting-time {
 		padding-left: 0.8rem;
 		box-sizing: border-box;
 	}
-	
+
 	.day-indicator .waiting-time .row.right {
 		width: 3.5rem;
 		text-align: center;
 		margin-left: -0.3rem;
 	}
-	
+
 	.day-indicator .day-satis {
 		width: 7.5rem;
-		height: 3.8rem;
+		height: 3.25rem;
 		background-image: linear-gradient(-180deg, #3F4A75 0%, #5D669F 100%);
 		margin-top: 0.5rem;
 		padding-left: 0.45rem;
@@ -618,14 +620,14 @@
 		color: #FFFFFF;
 		padding-top: 0.6rem;
 	}
-	
+
 	.day-indicator .day-satis .title {
 		display: flex;
 		align-items: center;
 		font-size: 0.24rem;
 		line-height: 0.33rem;
 	}
-	
+
 	.day-indicator .day-satis .title:before {
 		content: "";
 		display: inline-block;

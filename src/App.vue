@@ -38,11 +38,7 @@ export default {
   	return {
   		reqUrl: "http://119.23.160.41:3292"           //测试地址http://app.fssgjz.cn:2692
   	}                                               //正式地址http://119.23.160.41:3292
-  },//data闭合
-	created() {
-	
- 
-	}
+  }//data闭合
 }
 </script>
 

@@ -59,6 +59,7 @@
 						this.CountUnsatisfy = msg.CountUnsatisfy;
 						this.Satis_list = msg.Satis_list;
 					}else if(response.body.return_code === 501){
+						Toast("身份已过期请重新登录");
 						localStorage.removeItem('__app__');
 						this.$router.replace({
 	              path: '/login',

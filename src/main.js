@@ -36,14 +36,10 @@ Vue.http.interceptors.push((request, next) => {
 		document.addEventListener("plusready",plusReady,false);
 	}
 	function plusReady(){
-		alert("create")
-		window.w = plus.nativeUI.showWaiting( "加载中..." );
+		plus.nativeUI.showWaiting( "加载中..." );
 	}
 	next((response) => {
-	  if(window.w) {
-	  	alert("close")
-	 	  window.w.close();
-	  }
+		plus.nativeUI.closeWaiting();
 	})
 })
 

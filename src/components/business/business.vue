@@ -26,9 +26,12 @@
 					<div class="progress">
 						<div class="inner" :style="{width: barLen + 'rem'}">
 							<span class="percent" >{{Pro_TR}}%</span>
-						</div>			
+						</div>
 					</div>
-					<div class="volume-curve" ref="curve" style="width: 8.2rem; height: 5rem;"></div>
+					<div v-show="isChart" class="volume-curve" ref="curve" style="width: 8.2rem; height: 5rem;"></div>
+          <div v-show="!isChart" class="table" style="margin-top:0.5rem">
+            <dataTable :table="table1"></dataTable>
+          </div>
 				</div>
 				<div class="container" v-if="requestResult">
 					<div class="tab">
@@ -36,25 +39,32 @@
 						<div @click="typeToggle(1)" class="tab-item" :class="{'active':selectType===1}">客户来源业绩</div>
 					</div>
 					<div class="content">
-						<div class="pie" ref="pie" style="width: 6.9rem;height: 6.3rem;"></div>
+						<div v-show="isChart" class="pie" ref="pie" style="width: 6.9rem;height: 5.3rem;"></div>
+            <dataTable v-show="!isChart" :table="table2" style="margin-top:0.3rem"></dataTable>
 					</div>
 				</div>
 				<div class="errorTip" v-else>网络请求失败，请重试</div>
 			</div>
 		</div>
 		<mt-datetime-picker @confirm="handleChange" ref="picker" v-model="nowTime" :startDate="startTm" :endDate="endTm" type="date"></mt-datetime-picker>
+    <chartToggleButton @toggle="toggle"></chartToggleButton>
 	</div>
 </template>
 
 <script>
 	import BScroll from 'better-scroll';
-	import echarts from 'echarts';
+  import echarts from 'echarts';
 	//import { Navbar, TabItem } from 'mint-ui';
 	import comheader from '../header/header';
 	import {saveToLocal,loadFromLocal } from '../../common/js/store';
 	import pieOption from './pieOption';
 	import curveOption from './curveOption';
-	import { Toast } from 'mint-ui';
+  import { Toast } from 'mint-ui';
+  import chartToggleButton from '../chartToggleButton/chartToggleButton';
+  import {toggleChart} from '../../common/js/global';
+  import dataTable from '../dataTable/dataTable';
+  import {arrModify,toolTip} from '../../common/js/common';
+
 	export default {
 		props: ['reqUrl'],
 		data (){
@@ -70,14 +80,31 @@
 		  	nowTime: new Date(),
 		  	timeType: 1,
 		  	pickerValue: null,
-		  	Dept_list: null,
-		  	pieName: "科室业绩"
+        Dept_list: null,
+        DeptList2: null,
+        InfoSource_list2: null,
+		  	pieName: "科室业绩",
+        isChart: toggleChart.isChart,
+        table1: {
+          chartType: 'line',
+          TbHeaderType: 2,
+          Label1: "当年",
+          Label2: "上年",
+          tableList: []
+        },
+        table2: {
+          chartType: 'pie',
+          TbHeaderType: 1,
+          Label1: "营业额",
+          Label2: "百分比",
+          tableList: []
+        }
 			}
 		},
 		created() {
 			this.$nextTick(()=>{
 	  		this._initScroll()
-	  });
+    });
 			this.getNowDate();
 			this.requestData();
 		},
@@ -99,8 +126,7 @@
 				var compID = loadFromLocal("compID","");
 				var timeType = this.timeType;
 				var time = this.pickerValue;
-
-				this.$http.get(			
+				this.$http.get(
 	    		this.reqUrl+"/api/Data/getScore?token="+token+"&comp_code="+compID+"&types="+timeType+"&times="+ time,
 	  		).then((response)=>{
 	  			//成功后的回调
@@ -111,104 +137,88 @@
 						this.ResultAmt = msg.ResultAmt;
 						this.TargetValue = msg.TargetValue;
 						this.Pro_TR = msg.Pro_TR;
-						this.barLen = ((msg.Pro_TR/100)*6.6).toFixed(2)
-	
+						this.barLen = ((msg.Pro_TR/100)*6.6).toFixed(2);
+
 						if(!msg.SevenThis_list){
 							var initThisList = [];
 						}else{
 							initThisList = msg.SevenThis_list;
-						}
+            }
 						if(!msg.SevenLast_list){
-							var initLastList = [];	
+							var initLastList = [];
 						}else{
 							initLastList = msg.SevenLast_list;
 						}
 						var thisDataList = [];
 						var lastDataList = [];
-						var dateList = [];
-						
+            var dateList = [];
+            var tableList = [];
+
 						for (var i=0; i<initThisList.length; i++) {
 							var thisItem = initThisList[i]["ResultAmt"];
 							var dateItem = initThisList[i]["ResultDate"];
-							thisDataList.push(thisItem);						
-							dateList.push(dateItem);
-						}		
-						for(var i=0; i<initLastList.length; i++){
-							var lastItem = initLastList[i]["ResultAmt"];
-							lastDataList.push(lastItem);
+							thisDataList.push(thisItem);
+              dateList.push(dateItem);
+              if(!initLastList[i]){
+                lastDataList.push('');
+              }else{
+                var lastItem = initLastList[i]["ResultAmt"];
+                lastDataList.push(lastItem);
+              }
+              var table = {};
+              table.date = dateList[i];
+              table.thisData = thisDataList[i] + "万";
+              table.lastData = lastDataList[i] + "万";
+              tableList.push(table);
 						}
+
+            //设置营业额表数据
+            this.table1.tableList = tableList;
+
+            //设置曲线图数据
 						curveOption.series[0].data = thisDataList;
 						curveOption.series[1].data = lastDataList;
 						curveOption.series[0].markLine.data[0].yAxis = msg.TargetValue;
 						curveOption.xAxis.data = dateList;
-						
-						var selectYear = this.pickerValue.substr(0,4);
-						var selectLastYear = selectYear - 1;
-						var formatterFn;
-						if(timeType == 3){
-							curveOption.series[1].data = [];
-							curveOption.tooltip.formatter = "{b0}: {c0}万" ;			
-						}else if(timeType ==2){
-							formatterFn = function (params) {
-						  	var res = '';
-						  	var nyr = params[0].axisValue;
-						  	var n = nyr.substr(0,4);
-						  	var y = nyr.substr(5,2);
-						  	var r = nyr.substr(8,2);
-						  	var n2 = n-1+"";
-						  	if(!params[1]&&params[0].seriesName==="去年"){
-						  		res = n2 + "-" + y + ": " + params[0].data +"万" +"</br>";	
-						  	}else if(!params[1]&&params[0].seriesName==="今年"){
-						  		res = params[0].axisValue + ": " + params[0].data +"万" +"</br>";
-						  	}else{
-						  		res+= params[0].axisValue + ": " + params[0].data +"万" +"</br>";
-						  		res+= n2 + "-" + y + ": " + params[1].data +"万" +"</br>";	
-						  	}
-						  	return res;
-							}
-							curveOption.tooltip.formatter = formatterFn ;
-						}else if(timeType !== 3&&!msg.SevenLast_list){
-							curveOption.tooltip.formatter = "{b0}: {c0}万" ;	
-						}else{
-							 formatterFn = function (params) {
-						  	var res = '';
-						  	var nyr = params[0].axisValue;
-						  	var n = nyr.substr(0,4);
-						  	var y = nyr.substr(5,2);
-						  	var r = nyr.substr(8,2);
-						  	var n2 = n-1+"";
-					  		if(!params[1]&&params[0].seriesName==="去年"){
-						  		res = n2 + "-" + y + "-" + r + ": " + params[0].data +"万" +"</br>";	
-						  	}else if(!params[1]&&params[0].seriesName==="今年"){
-						  		res = params[0].axisValue + ": " + params[0].data +"万" +"</br>";
-						  	}else{
-						  		res+= params[0].axisValue + ": " + params[0].data +"万" +"</br>";
-						  		res+= n2 + "-" + y + "-" + r + ": " + params[1].data +"万" +"</br>";	
-						  	}
-						  	return res;
-							}
-							curveOption.tooltip.formatter = formatterFn;
-						}
+
+						// var selectYear = this.pickerValue.substr(0,4);
+						// var selectLastYear = selectYear - 1;
+            toolTip(timeType,curveOption,initLastList);
 						this.initCurve();
-						
+
 						if(!msg.Dept_list){
 							var DeptList = [];
 							this.Dept_list = DeptList;
 						}else{
 							DeptList = msg.Dept_list;
-							this.Dept_list = DeptList;
-						}
-						pieOption.series[0].data = DeptList.sort(function (a, b) { return a.value - b.value; });
-						pieOption.series[0].name = this.pieName;
-						
+              this.Dept_list = DeptList;
+              //将返回的数组数据进行修改，用于显示饼图表的数据
+              var DeptList2 = arrModify(DeptList,"万");
+              //保存在this.DeptList2，用于切换
+              this.DeptList2 = DeptList2;
+            }
+
+            //设置piechart的配置
+						pieOption.series[0].data = DeptList.sort(function (a, b) { return b.value - a.value; });
+            pieOption.series[0].name = this.pieName;
+
+            //设置科室业绩表数据
+            this.table2.tableList = DeptList2;
+
 						if(!msg.InfoSource_list){
 							this.InfoSource_list = [];
 						}else{
-							this.InfoSource_list = msg.InfoSource_list;
-						}					
+              this.InfoSource_list = msg.InfoSource_list;
+              //将返回的数组数据进行修改，用于显示饼图表的数据
+              var InfoSource_list2 = arrModify(this.InfoSource_list,"万");
+              //保存在this.InfoSource_list2，用于切换
+              this.InfoSource_list2 = InfoSource_list2;
+            }
+
 						this.initPie();
-						
+
 					}else if(response.body.return_code === 501){
+						Toast("身份已过期请重新登录");
 						localStorage.removeItem('__app__');
 						this.$router.replace({
 	              path: '/login',
@@ -219,15 +229,15 @@
 					}
 				},(response) => {
 				  // 响应错误回调
-				  this.requestResult = false;
-				});	
+				  //this.requestResult = false;
+				});
 			},
 			initCurve() {
 				//初始化曲线图表
 				//图表相关配置参数在curveOption模块文件中
 				this.$nextTick(()=>{
 					var curveDom = this.$refs.curve;
-					var curveChart = echarts.init(curveDom);	
+					var curveChart = echarts.init(curveDom);
 					curveChart.setOption(curveOption);
 				})
 			},
@@ -236,7 +246,7 @@
 				//图表相关配置参数在pieOption模块文件中
 				this.$nextTick(()=>{
 					var pieDom = this.$refs.pie;
-					var pieChart = echarts.init(pieDom);	
+					var pieChart = echarts.init(pieDom);
 					pieChart.setOption(pieOption);
 				})
 			},
@@ -259,7 +269,7 @@
 			openPicker(picker) {
 	      this.$refs.picker.open();
 	    },
-	    handleChange(value){  	
+	    handleChange(value){
 	     	var d = new Date(value.toString());
 				var date = d.getFullYear() + '.' + (d.getMonth() + 1) + '.' + d.getDate();
 				this.pickerValue = date;
@@ -272,19 +282,26 @@
 				this.selectType = type;
 				if(type === 0){
 					this.pieName="科室业绩";
-					pieOption.series[0].data = this.Dept_list.sort(function (a, b) { return a.value - b.value; });
-					pieOption.series[0].name = this.pieName;
+					pieOption.series[0].data = this.Dept_list.sort(function (a, b) { return b.value - a.value; });
+          pieOption.series[0].name = this.pieName;
+          this.table2.tableList = this.DeptList2;
 					pieChart.setOption(pieOption);
 				}else if(type === 1){
 					this.pieName="客户来源业绩";
-					pieOption.series[0].data = this.InfoSource_list.sort(function (a, b) { return a.value - b.value; });
-					pieOption.series[0].name = this.pieName;
+					pieOption.series[0].data = this.InfoSource_list.sort(function (a, b) { return b.value - a.value; });
+          pieOption.series[0].name = this.pieName;
+          this.table2.tableList = this.InfoSource_list2;
 					pieChart.setOption(pieOption);
 				}
-			}
+      },
+      toggle(state) {
+        this.isChart = state;
+      }
 		},
 		components: {
-			comheader
+      comheader,
+      chartToggleButton,
+      dataTable
 		}
 	}
 </script>
@@ -306,7 +323,7 @@
 	padding: 0 0.45rem;
 	display: flex;
 	justify-content: space-between;
-	margin-bottom: 0.56rem;
+	margin-bottom: 0.5rem;
 }
 .picker-btn{
 	line-height: 0.42rem;
@@ -328,7 +345,7 @@
 .selectorbar .btn-group{
 	line-height: 0.42rem;
 	font-size: 0.3rem;
-	color: #fff;	
+	color: #fff;
 	text-align: center;
 }
 .selectorbar .btn-group .btn{
@@ -432,13 +449,16 @@
 	color: #fff;
 	font-size: 0.2rem;
 }
+.business .table{
+  min-height: 3.37rem;
+}
 .business .volume-curve{
 	margin-left: -0.8rem;
-	margin-top: -0.4rem;
+	margin-top: -0.76rem;
 }
 .business .container{
 	width: 6.6rem;
-	height: 5.85rem;
+	min-height: 5.51rem;
 	margin: 0 auto;
 	background-image: linear-gradient(-180deg, #5D669F 0%, #414B73 100%);
 	border-top-left-radius: 0.25rem;
@@ -476,7 +496,8 @@
 	margin: 0 auto;
 }
 .business .container .pie{
-	margin-top: -0.95rem;
+	margin-top: -0.78rem;
 	margin-left: -0.3rem;
 }
+
 </style>

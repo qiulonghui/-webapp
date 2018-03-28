@@ -12,13 +12,11 @@
 				</div>
 				<div class="selectorbar">
 					<span class="picker-btn" @click="openPicker">{{pickerValue}}</span>
-					<keep-alive>
-						<div class="btn-group">
-							<span @click="typeDurToggle(0)" class="btn" :class="{'active':selectDurType===0}">日</span>
-							<span @click="typeDurToggle(1)" class="btn" :class="{'active':selectDurType===1}">月</span>
-							<span @click="typeDurToggle(2)" class="btn" :class="{'active':selectDurType===2}">年</span>
-						</div>
-					</keep-alive>
+          <div class="btn-group">
+            <span @click="typeDurToggle(0)" class="btn" :class="{'active':selectDurType===0}">日</span>
+            <span @click="typeDurToggle(1)" class="btn" :class="{'active':selectDurType===1}">月</span>
+            <span @click="typeDurToggle(2)" class="btn" :class="{'active':selectDurType===2}">年</span>
+          </div>
 				</div>
 		    <div class="page-tab-container" v-if="requestResult">
 					<mt-tab-container v-model="selectType" swipeable>
@@ -27,13 +25,17 @@
 								<div class="num">{{ComeNum}}人</div>
 								<div class="label">门诊总数</div>
 							</div>
-							<div class="cus-curve" ref="cusCurve" style="width: 8.2rem; height: 4.85rem;"></div>
+							<div v-show="isChart" class="cus-curve" ref="cusCurve" style="width: 8.2rem; height: 4.85rem;"></div>
+              <div v-show="!isChart" class="table" style="margin-top:0.5rem">
+                <dataTable :table="table1"></dataTable>
+              </div>
 							<div class="container">
 								<div class="tab">
 									<div class="tab-item">初诊客户来源</div>
 								</div>
 								<div class="content">
-									<div class="pie" ref="pie" style="width: 6.9rem;height: 6.3rem;"></div>
+									<div v-show="isChart" class="pie" ref="pie" style="width: 6.9rem;height: 6.3rem;"></div>
+                  <dataTable v-show="!isChart" :table="table2" style="margin-top:0.3rem"></dataTable>
 								</div>
 							</div>
 					  </mt-tab-container-item>
@@ -52,35 +54,40 @@
 									<div class="td">
 										<div class="num">30</div>
 										<div class="fz">分钟</div>
-									</div class="td">
+									</div>
 									<div class="td">
 										<div class="num">45</div>
 										<div class="fz">分钟</div>
 									</div>
 								</div>
 								<table border="" cellspacing="" cellpadding="">
-									<tr v-for="item in tableDate"><td>{{item.time}}</td><td>{{item.time15}}</td><td>{{item.time30}}</td><td>{{item.time45}}</td></tr>
+									<tr v-for="(item,index) in tableDate" :key="index"><td>{{item.time}}</td><td>{{item.time15}}</td><td>{{item.time30}}</td><td>{{item.time45}}</td></tr>
 								</table>
 							</div>
 					  </mt-tab-container-item>
 					</mt-tab-container>
-				</div>	
-				<div class="errorTip" v-else>网络请求失败，请重试</div>		
+				</div>
+				<div class="errorTip" v-else>网络请求失败，请重试</div>
 			</div>
 		</div>
+    <chartToggleButton @toggle="toggle"></chartToggleButton>
 		<mt-datetime-picker @confirm="handleChange" ref="picker" v-model="nowTime" :startDate="startTm" :endDate="endTm" type="date"></mt-datetime-picker>
 	</div>
 </template>
 
 <script>
 	import echarts from 'echarts';
-	import BScroll from 'better-scroll';
+  import BScroll from 'better-scroll';
 	import { Navbar, TabItem } from 'mint-ui';
 	import {saveToLocal,loadFromLocal } from '../../common/js/store';
 	import curveOption from './curveOption';
 	import pieOption from './pieOption';
-	import { Toast } from 'mint-ui';
-	
+  import { Toast } from 'mint-ui';
+  import {toggleChart} from '../../common/js/global';
+  import chartToggleButton from '../chartToggleButton/chartToggleButton';
+  import dataTable from '../dataTable/dataTable';
+  import {arrModify} from '../../common/js/common';
+
 	export default {
 		props: ['reqUrl'],
 		data() {
@@ -94,9 +101,24 @@
 				timeType: 1,
 				ComeNum: null,
 				pieName: "初诊客户来源",
-				OverNum: ""
+        OverNum: "",
+        isChart: toggleChart.isChart,
+        table1: {
+          chartType: 'line',
+          TbHeaderType: 2,
+          Label1: "初诊量",
+          Label2: "复诊量",
+          tableList: []
+        },
+        table2: {
+          chartType: 'pie',
+          TbHeaderType: 1,
+          Label1: "人数",
+          Label2: "百分比",
+          tableList: []
+        }
 			}
-				
+
 		},
 		created() {
 			this.$nextTick(()=>{
@@ -123,7 +145,7 @@
 				var compID = loadFromLocal("compID","");
 				var timeType = this.timeType;
 				var time = this.pickerValue;
-				this.$http.get(			
+				this.$http.get(
 	    		this.reqUrl+"/api/Data/getClient?token="+token+"&comp_code="+compID+"&types="+timeType+"&times="+ time,
 	  		).then((response)=>{
 					if(response.body.return_code===1){
@@ -133,33 +155,45 @@
 						this.ComeNum = msg.ComeNum;
 						this.tableDate = msg.Over_list;
 						this.OverNum = msg.OverNum;
-						
+
 						var initFirstList = msg.SevenFirst_list;
 						var initSecondList = msg.SevenSecond_list;
 						var firstDataList = [];
 						var secondDataList = [];
-						var dateList = [];
+            var dateList = [];
+            var tableList = [];
 						for (var i=0; i<initFirstList.length; i++) {
 							var firstItem = initFirstList[i]["FirstNum"];
-							var dateItem = initFirstList[i]["ResultDate"];
-							firstDataList.push(firstItem);						
-							dateList.push(dateItem);
-						}		
-						for(var i=0; i<initSecondList.length; i++){
-							var secondItem = initSecondList[i]["FirstNum"];
-							secondDataList.push(secondItem);
-						}
+              var dateItem = initFirstList[i]["ResultDate"];
+              var secondItem = initSecondList[i]["FirstNum"];
+              firstDataList.push(firstItem);
+              secondDataList.push(secondItem);
+              dateList.push(dateItem);
+
+              var table = {};
+              table.date = dateList[i];
+              table.thisData = firstDataList[i] + "人";
+              table.lastData = secondDataList[i] + "人";
+              tableList.push(table);
+            }
+            //设置门诊数表数据
+            this.table1.tableList = tableList;
+
 						curveOption.series[0].data = firstDataList;
 						curveOption.series[1].data = secondDataList;
 						console.log(secondDataList);
 						curveOption.xAxis.data = dateList;
-						this.initCurve();
-						
-						pieOption.series[0].data = msg.InfoSource_list.sort(function (a, b) { return a.value - b.value; });
+            this.initCurve();
+
+            var InfoSource_list2 = arrModify(msg.InfoSource_list,"人");
+            this.table2.tableList = InfoSource_list2;
+
+						pieOption.series[0].data = msg.InfoSource_list.sort(function (a, b) { return b.value - a.value; });
 						pieOption.series[0].name = this.pieName;
 						this.initPie();
-						
+
 					}else if(response.body.return_code === 501){
+						Toast("身份已过期请重新登录");
 						localStorage.removeItem('__app__');
 						this.$router.replace({
 	              path: '/login',
@@ -170,24 +204,24 @@
 					}
 				},(response) => {
 				  // 响应错误回调
-				  this.requestResult = false;
-				});	
+				  //this.requestResult = false;
+				});
 			},
 			initCurve() {
 				//初始化曲线图表
 				//图表相关配置参数在curveOption模块文件中
 				this.$nextTick(()=>{
 					var curveDom = this.$refs.cusCurve;
-					var curveChart = echarts.init(curveDom);	
+					var curveChart = echarts.init(curveDom);
 					curveChart.setOption(curveOption);
-				})	
+				})
 			},
 			initPie() {
 				//初始化饼图图表
 				//图表相关配置参数在pieOption模块文件中
 				this.$nextTick(()=>{
 					var pieDom = this.$refs.pie;
-					var pieChart = echarts.init(pieDom);	
+					var pieChart = echarts.init(pieDom);
 					pieChart.setOption(pieOption);
 				})
 			},
@@ -220,15 +254,22 @@
 			openPicker(picker) {
 	      this.$refs.picker.open();
 	    },
-	    handleChange(value) {  	
+	    handleChange(value) {
 	     	var d = new Date(value.toString());
 				var date = d.getFullYear() + '.' + (d.getMonth() + 1) + '.' + d.getDate();
 				this.pickerValue = date;
 				this.requestData();
-	    }
-		}
+      },
+      toggle(state) {
+        this.isChart = state;
+      }
+    },
+    components: {
+      chartToggleButton,
+      dataTable
+    }
 	}
-	
+
 </script>
 
 <style scoped>
@@ -249,6 +290,9 @@
 		left: 0;
 		right: 0;
 	}
+  .client .table{
+    min-height: 3.4rem
+  }
 	.header{
 		width: 6.9rem;
 		height: 0.88rem;
@@ -314,7 +358,7 @@
 	.selectorbar .btn-group{
 		line-height: 0.42rem;
 		font-size: 0.3rem;
-		color: #fff;	
+		color: #fff;
 	}
 	.selectorbar .btn-group .btn{
 		display: inline-block;
@@ -362,7 +406,7 @@
 	}
 	.page-tab-container .container{
 		width: 6.6rem;
-		height: 6.3rem;
+		min-height: 5.68rem;
 		margin: 0 auto;
 		background-image: linear-gradient(-180deg, #5D669F 0%, #414B73 100%);
 		border-top-left-radius: 0.25rem;
@@ -426,7 +470,7 @@
 		min-height: 4rem;
 		background-image: linear-gradient(-180deg, #333B5A 0%, rgba(51,59,90,0.00) 100%);
 		color: #FFFFFF;
-		text-align: center;		
+		text-align: center;
 	}
 	.table-wrap table tr{
 		display: flex;
@@ -438,5 +482,5 @@
 		vertical-align: middle;
 		font-size: 0.24rem;
 	}
-	
+
 </style>

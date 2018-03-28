@@ -4,14 +4,16 @@ export default{
 	    position: "inside",
 	    formatter: "{a} <br/>{b} : {c}人 ({d}%)"
 	},
-	color:['#7a7ce0','#8298e3','#7bafde','#7acae1','#70e5df'],
+	color:['#70E5E0','#78D4E1','#7DC3E1','#80B2E2','#82A1E2','#8298E2','#817EE2'],
 	series : [
 	    {
 	        name:'访问来源',
 	        type:'pie',
+	        startAngle: 60,
+	        clockwise: false,
 	        radius : '56%',
 	        center: ['50%', '52%'],
-	        data:[].sort(function (a, b) { return a.value - b.value; }),
+	        data:[].sort(function (a, b) { return b.value - a.value; }),
 	        label: {
 	            normal: {
 	                textStyle: {
@@ -35,5 +37,5 @@ export default{
 	            return Math.random() * 200;
 	        }
 	    }
-	]
+	 ]
 }

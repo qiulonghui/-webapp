@@ -4,20 +4,19 @@ export default{
       position: "inside",
       formatter: "{a} <br/>{b} : {c}人 ({d}%)"
   },
-	color:['#7a7ce0','#7acae1','#70e5df'],
+	color:['#70E5E0','#78D4E1','#7DC3E1','#80B2E2','#82A1E2','#8298E2','#817EE2'],
   series : [
       {
           name:'满意度数据',
           type:'pie',
-          radius : '55%',
+          startAngle: 60,
+	        clockwise: false,
+          radius : '42%',
           center: ['47%', '50%'],
-          data:[].sort(function (a, b) { return a.value - b.value; }),
+          data:[].sort(function (a, b) { return b.value - a.value; }),
           label: {
-              normal: {
-                  textStyle: {
-                      color: 'rgba(255, 255, 255, 1)'
-                  }
-              }
+              color: 'rgba(255, 255, 255, 1)',               
+              formatter: "{b}: {c}人"
           },
           labelLine: {
               normal: {

@@ -32,7 +32,6 @@
 			}
 		},
 		created() {
-			localStorage.removeItem('__app__');
 			//获取用户授权Token请求headers
 			var clientId = "kkapi_shdata";
   		var clientSecret = "*SH888_kk&%API#";
@@ -55,7 +54,6 @@
     			tokenType = response.body.token_type;
 					saveToLocal("bearerToken",bearerToken);
 					saveToLocal("tokenType",tokenType);
-					alert("requestBearerToken")
 				},(response) => {
 				  // 响应错误回调
 				  Toast('请求失败，请检查网络1');

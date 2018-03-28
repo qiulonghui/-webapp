@@ -40,6 +40,7 @@
 	  			this.name = msg.name;
 	  			this.job = msg.job;
   			}else if(response.body.return_code === 501){
+  				Toast("身份已过期请重新登录");
 					localStorage.removeItem('__app__');
 					this.$router.replace({
               path: '/login',

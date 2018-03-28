@@ -6,7 +6,7 @@
 				<div class="cont-container" v-if="requestResult">
 					<div class="text-content">
 						<div class="num">{{CountSum}}人</div>
-						<div @click="test" class="label">评价总数</div>
+						<div class="label">评价总数</div>
 					</div>
 					<div class="btn-wrap">
 						<span class="picker-btn" @click="openPicker">{{pickerValue}}</span>
@@ -14,7 +14,10 @@
 				</div>
 				<div class="container-shadow" v-if="requestResult">
 					<div class="chart-container" ref="pieWrapper">
-						<div  ref="pie" class="pie" style="width: 6.8rem;height: 7rem;"></div>
+						<div v-show="isChart" ref="pie" class="pie" style="width: 6.8rem;height: 7rem;"></div>
+            <div v-show="!isChart" class="table" style="margin-top:0.5rem">
+              <dataTable :table="table1"></dataTable>
+            </div>
 					</div>
 				</div>
 				<div v-if="requestResult">
@@ -29,6 +32,7 @@
 			</div>
 		</div>
 		<mt-datetime-picker @confirm="handleChange" ref="picker" v-model="nowTime" :startDate="startTm" :endDate="endTm" type="date"></mt-datetime-picker>
+    <chartToggleButton @toggle="toggle"></chartToggleButton>
 	</div>
 </template>
 
@@ -39,6 +43,10 @@
 	import {saveToLocal,loadFromLocal } from '../../common/js/store';
 	import pieOption from './pieOption';
 	import { Toast } from 'mint-ui';
+  import chartToggleButton from '../chartToggleButton/chartToggleButton';
+  import {arrModify} from '../../common/js/common';
+  import {toggleChart} from '../../common/js/global';
+  import dataTable from '../dataTable/dataTable';
 
 	export default {
 		props: ['reqUrl'],
@@ -50,7 +58,15 @@
 				CountUnsatisfy: null,
 				pickerValue: '',
 				nowTime: new Date(),
-				timeType: 1
+        timeType: 1,
+        isChart: toggleChart.isChart,
+        table1: {
+          chartType: 'pie',
+          TbHeaderType: 1,
+          Label1: "人数",
+          Label2: "百分比",
+          tableList: []
+        }
 			}
 		},
 		created() {
@@ -73,16 +89,12 @@
 			}
 		},
 		methods: {
-		  test: function () {
-        console.log(666);
-        this.$refs.pieWrapper.click();
-      },
 			requestData() {
 				var token = loadFromLocal("token","");
 				var compID = loadFromLocal("compID","");
 				var timeType = this.timeType;
 				var time = this.pickerValue
-				this.$http.get(			
+				this.$http.get(
 	    		this.reqUrl+"/api/Data/getSatisfaction?token="+token+"&comp_code="+compID+"&types="+timeType+"&times="+ time,
 	  		).then((response)=>{
 					if(response.body.return_code===1){
@@ -91,11 +103,14 @@
 						this.requestResult = true;
 						this.CountSum = msg.CountSum;
 						this.CountUnsatisfy = msg.CountUnsatisfy;
-						
-						pieOption.series[0].data = msg.Count_list.sort(function (a, b) { return a.value - b.value; });
+
+            var CountUnsatisfy2 =  arrModify(this.CountUnsatisfy,"人");
+            this.table1.tableList = CountUnsatisfy2;
+						pieOption.series[0].data = msg.Count_list.sort(function (a, b) { return b.value - a.value; });
 						this.initPie();
-						
+
 					}else if(response.body.return_code === 501){
+						Toast("身份已过期请重新登录");
 						localStorage.removeItem('__app__');
 						this.$router.replace({
 	              path: '/login',
@@ -106,17 +121,17 @@
 					}
 				},(response) => {
 				  // 响应错误回调
-				  this.requestResult = false;
-				});	
+				  //this.requestResult = false;
+				});
 			},
 			initPie() {
 				//初始化饼图图表
 				//图表相关配置参数在pieOption模块文件中
 				this.$nextTick(()=>{
 					var pieDom = this.$refs.pie;
-					var pieChart = echarts.init(pieDom);	
+					var pieChart = echarts.init(pieDom);
 					pieChart.setOption(pieOption);
-				})	
+				})
 			},
 			_initScroll() {
 	    	this.pageScroll = new BScroll(this.$refs.pageWrapper,{
@@ -131,18 +146,20 @@
 			openPicker(picker) {
 	      this.$refs.picker.open();
 	    },
-	    handleChange(value){  	
+	    handleChange(value) {
 	     	var d = new Date(value.toString());
 				var date = d.getFullYear() + '.' + (d.getMonth() + 1) + '.' + d.getDate();
 				this.pickerValue = date;
 				this.requestData();
-	    }
-		},
-		mounted() {
-			
+      },
+      toggle(state) {
+        this.isChart = state;
+      }
 		},
 		components: {
-			comheader
+      comheader,
+      chartToggleButton,
+      dataTable
 		}
 	}
 </script>
@@ -166,7 +183,7 @@
 		right: 0;
 	}
 	.satisfact .scroll-container{
-		padding-bottom: 0.6rem;
+		padding-bottom: 0.7rem;
 	}
 	.satisfact .cont-container{
 		display: flex;
@@ -210,7 +227,7 @@
     background-size: 0.14rem 0.19rem;
     background-position: right 0.1rem;
     padding-right: 0.25rem;
-    margin-bottom: -0.06rem; 
+    margin-bottom: -0.06rem;
 	}
 	.satisfact .container-shadow{
 		position: relative;
@@ -256,7 +273,7 @@
 		box-shadow: 0 0.09rem 0.2rem 0 rgba(51,59,90,0.26), inset 0 0 0.14rem 0 rgba(245,152,135,0.41);
 		border-radius: 0.2rem;
 		margin: 0 auto;
-		margin-top: 1.3rem;
+		margin-top: 0.9rem;
 	}
 	.satisfact .link:after{
 		content:"";
@@ -274,6 +291,7 @@
 		font-size: 0.36rem;
 	}
 	.satisfact .link .text2{
+    font-size: 0.36rem;
 		margin-right: 0.2rem;
 	}
 </style>
