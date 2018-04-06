@@ -6,11 +6,7 @@
 				<comheader></comheader>
 				<div class="selectorbar">
 					<span class="picker-btn" @click="openPicker">{{pickerValue}}</span>
-					<div class="btn-group">
-						<span @click="typeDurToggle(0)" class="btn" :class="{'active':selectDurType===0}">日</span>
-						<span @click="typeDurToggle(1)" class="btn" :class="{'active':selectDurType===1}">月</span>
-						<span @click="typeDurToggle(2)" class="btn" :class="{'active':selectDurType===2}">年</span>
-					</div>
+          <durBtnGroup @dataToggle="dataToggle"></durBtnGroup>
 				</div>
 				<div class="volume" v-if="requestResult">
 					<div class="text-content">
@@ -57,6 +53,7 @@
 	//import { Navbar, TabItem } from 'mint-ui';
 	import comheader from '../header/header';
 	import {saveToLocal,loadFromLocal } from '../../common/js/store';
+  import durBtnGroup from '../durBtnGroup/durBtnGroup';
 	import pieOption from './pieOption';
 	import curveOption from './curveOption';
   import { Toast } from 'mint-ui';
@@ -74,9 +71,8 @@
 				TargetValue: "",
 				Pro_TR: "",
 				barLen: 0,
-				selectType: 0,
+				selectType: 0, //科室业绩和客户来源两种类型
 				pickerValue: '',
-		  	selectDurType: 0,
 		  	nowTime: new Date(),
 		  	timeType: 1,
 		  	pickerValue: null,
@@ -229,7 +225,7 @@
 					}
 				},(response) => {
 				  // 响应错误回调
-				  //this.requestResult = false;
+				  this.requestResult = false;
 				});
 			},
 			initCurve() {
@@ -250,11 +246,10 @@
 					pieChart.setOption(pieOption);
 				})
 			},
-			typeDurToggle(type) {
-				this.selectDurType = type;
+			dataToggle(type) {
 				this.timeType = type+1;
 				this.requestData();
-				this.selectType = 0;
+				this.selectType = 0;  //重选时间类型后，饼图自动切换到科室业绩
 			},
 			_initScroll() {
 	    	this.pageScroll = new BScroll(this.$refs.pageWrapper,{
@@ -301,7 +296,8 @@
 		components: {
       comheader,
       chartToggleButton,
-      dataTable
+      dataTable,
+      durBtnGroup
 		}
 	}
 </script>
@@ -341,28 +337,6 @@
 	align-items: center;
 	height: 10.48rem;
 	color: #FFFFFF;
-}
-.selectorbar .btn-group{
-	line-height: 0.42rem;
-	font-size: 0.3rem;
-	color: #fff;
-	text-align: center;
-}
-.selectorbar .btn-group .btn{
-	display: inline-block;
-	width: 0.5rem;
-	text-align: center;
-	margin-left: 0.15rem;
-}
-.selectorbar .btn-group .btn.active:after{
-	content: "";
-	display: block;
-	width: 100%;
-	height: 0.1rem;
-	background-image: url(../selectorbar/img/sign_result_time@1.5x.png);
-	background-size: 0.33rem 0.08rem;
-	background-repeat: no-repeat;
-	background-position: center;
 }
 .business .main-container{
 	position: absolute;

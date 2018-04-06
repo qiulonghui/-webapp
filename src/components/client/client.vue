@@ -12,11 +12,7 @@
 				</div>
 				<div class="selectorbar">
 					<span class="picker-btn" @click="openPicker">{{pickerValue}}</span>
-          <div class="btn-group">
-            <span @click="typeDurToggle(0)" class="btn" :class="{'active':selectDurType===0}">日</span>
-            <span @click="typeDurToggle(1)" class="btn" :class="{'active':selectDurType===1}">月</span>
-            <span @click="typeDurToggle(2)" class="btn" :class="{'active':selectDurType===2}">年</span>
-          </div>
+          <durBtnGroup @dataToggle="dataToggle"></durBtnGroup>
 				</div>
 		    <div class="page-tab-container" v-if="requestResult">
 					<mt-tab-container v-model="selectType" swipeable>
@@ -80,13 +76,15 @@
   import BScroll from 'better-scroll';
 	import { Navbar, TabItem } from 'mint-ui';
 	import {saveToLocal,loadFromLocal } from '../../common/js/store';
-	import curveOption from './curveOption';
+  import curveOption from './curveOption';
+  import durBtnGroup from '../durBtnGroup/durBtnGroup';
 	import pieOption from './pieOption';
   import { Toast } from 'mint-ui';
   import {toggleChart} from '../../common/js/global';
   import chartToggleButton from '../chartToggleButton/chartToggleButton';
   import dataTable from '../dataTable/dataTable';
   import {arrModify} from '../../common/js/common';
+import durBtnGroupVue from '../durBtnGroup/durBtnGroup.vue';
 
 	export default {
 		props: ['reqUrl'],
@@ -95,7 +93,6 @@
 				requestResult: true,
 				selectType: '1',
 				pickerValue: '',
-		  	selectDurType: 0,
 				tableDate: [],
 				nowTime: new Date(),
 				timeType: 1,
@@ -204,7 +201,7 @@
 					}
 				},(response) => {
 				  // 响应错误回调
-				  //this.requestResult = false;
+				  this.requestResult = false;
 				});
 			},
 			initCurve() {
@@ -236,8 +233,7 @@
 			_backPage() {
 				this.$router.go(-1);
 			},
-			typeDurToggle(type) {
-				this.selectDurType = type;
+			dataToggle(type) {
 				this.timeType = type+1;
 				this.requestData();
 			},
@@ -266,7 +262,8 @@
     },
     components: {
       chartToggleButton,
-      dataTable
+      dataTable,
+      durBtnGroup
     }
 	}
 
@@ -354,27 +351,6 @@
 	  background-size: 0.14rem 0.19rem;
 	  background-position: right 0.1rem;
 	  padding-right: 0.25rem;
-	}
-	.selectorbar .btn-group{
-		line-height: 0.42rem;
-		font-size: 0.3rem;
-		color: #fff;
-	}
-	.selectorbar .btn-group .btn{
-		display: inline-block;
-		width: 0.5rem;
-		text-align: center;
-		margin-left: 0.15rem;
-	}
-	.selectorbar .btn-group .btn.active:after{
-		content: "";
-		display: block;
-		width: 100%;
-		height: 0.1rem;
-		background-image: url(../selectorbar/img/sign_result_time@1.5x.png);
-		background-size: 0.33rem 0.08rem;
-		background-repeat: no-repeat;
-		background-position: center;
 	}
 	.page-tab-container .cont{
 		padding: 0 0.45rem;

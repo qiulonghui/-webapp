@@ -120,7 +120,7 @@
 					}
 				},(response) => {
 				  // 响应错误回调
-				  //this.requestResult = false;
+				  this.requestResult = false;
 				});
 			},
 			initPie() {
