@@ -148,7 +148,7 @@
 				var token = loadFromLocal("token","");
 				var compID = this.compID;
 				var timeType = this.timeType;
-				var time = this.pickerValue
+				var time = this.pickerValue;
 				var bearerToken = loadFromLocal("bearerToken","");
 				var tokenType = loadFromLocal("tokenType","");
 

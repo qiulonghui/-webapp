@@ -20,7 +20,7 @@
 	import { Toast } from 'mint-ui';
 	import {saveToLocal,loadFromLocal } from '../../common/js/store';
 	import {Base64Encode} from './Base64Encode';
-	
+
 	export default {
 		props: ['reqUrl'],
 		data() {
@@ -28,17 +28,18 @@
 				verCodeToggle: true,
 				second: 10,
 				phoneNumber: '',
-				verCode: ''
+				verCode: '',
+				gtID: null,
 			}
 		},
 		created() {
 			//获取用户授权Token请求headers
 			var clientId = "kkapi_shdata";
   		var clientSecret = "*SH888_kk&%API#";
-
 			var bearerToken = loadFromLocal("bearerToken","");
 			var tokenType = "";
 			if(bearerToken===""){
+				// 设置请求头
 				Vue.http.options.headers = {
 		 			"Authorization": "Basic " + Base64Encode(clientId + ":" + clientSecret),
 		      "Content-Type": "application/json",
@@ -49,7 +50,7 @@
 	    		{"grant_type": "client_credentials"},
 	    		{emulateJSON : true}
     		).then((response)=>{
-    			 // 响应成功回调
+    			// 响应成功回调
     			bearerToken = response.body.access_token;
     			tokenType = response.body.token_type;
 					saveToLocal("bearerToken",bearerToken);
@@ -77,13 +78,17 @@
 		    		{tel:this.phoneNumber},
 		    		{emulateJSON : true}
 	    		).then((response)=>{
+            // 响应错误回调
 						if(response.body.return_code===1){
 							Toast(response.body.return_msg)
 						}else{
 							Toast(response.body.return_msg)
 						}
-					});	
-					this.verCodeToggle = false;			
+					},(response) => {
+					  // 响应错误回调
+					  Toast(JSON.stringify(response));
+					});
+					this.verCodeToggle = false;
 					var timer = setInterval(()=>{
 						this.second--;
 						if(this.second===0){
@@ -119,11 +124,20 @@
 				}
 	    },
 			login() {
+				var inf = plus.push.getClientInfo();
+				var u = navigator.userAgent.toLowerCase();
+				var gtClientId = inf.clientid;
 				var vpResult = this._veriPhone;
 				var vcResult = this._veriCode;
 				var bearerToken = loadFromLocal("bearerToken","");
 				var tokenType = loadFromLocal("tokenType","");
-				
+				if (u.indexOf('android') > -1) {
+         //安卓手机
+         var deviceType = "Android";
+	      } else if (u.indexOf('iphone') > -1) {
+	       //苹果手机
+	       deviceType = "IOS";
+	      }
 				Vue.http.options.headers = {
 		 			"Authorization": tokenType +" "+bearerToken,
 		      "Content-Type": "application/json",
@@ -137,15 +151,33 @@
 		    		{tel:this.phoneNumber,checkCode:this.verCode},
 		    		{emulateJSON : true}
 	    		).then((response)=>{
-	    			 // 响应成功回调
+	    			// 响应成功回调
 						if(response.body.return_code===1){
 							var msg = JSON.parse(response.body.return_msg);
+							var _this = this;
 							saveToLocal("token",msg.token);
 							saveToLocal("comp_list",msg.comp_list)
-							this.$router.replace({
-                    path: '/page2'
-               });  
-              window.location.reload();
+							var token = msg.token;
+							//判断是否存在推送的标识clientid，0为无。需要将ID发送给服务器
+							if(msg.isclientid === 0){
+								this.$http.get(
+					    		this.reqUrl+"/api/User/getGetTui?token="+token+"&clientid="+gtClientId+"&apptype="+deviceType,
+					  		).then((response)=>{
+					  			//请求成功后的操作
+									_this.$router.replace({
+	                    path: '/page2'
+	                });
+	              	window.location.reload();
+								},(response) => {
+								  // 响应错误回调
+								  Toast('gtId获取失败');
+								})
+							}else{
+								this.$router.replace({
+                  path: '/page2'
+	              });
+	              window.location.reload();
+							}
 						}else{
 							Toast(response.body.return_msg);
 						}
