@@ -20,12 +20,12 @@
 					<div class="tab-icon"></div>
 					<div class="tab-text">个人中心</div>
 				</router-link>
-			</div>		
+			</div>
   	</div>
     <transition name="slide">
     	<keep-alive>
 				<router-view :reqUrl="reqUrl"></router-view>
-			</keep-alive>	
+			</keep-alive>
     </transition>
   </div>
 </template>

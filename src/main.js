@@ -37,38 +37,15 @@ Vue.config.productionTip = false;
 Vue.use(MintUI);
 Vue.use(VueResource);
 
-var clientId = "kkapi_shdata";
-var clientSecret = "*SH888_kk&%API#";
 var bearerToken = loadFromLocal("bearerToken","");
 var tokenType = loadFromLocal("tokenType","");
 
-// 设置请求头
+
 Vue.http.options.headers = {
-  "Authorization": "Basic " + Base64Encode(clientId + ":" + clientSecret),
-  "Content-Type": "application/json",
+  "Authorization": tokenType +" "+bearerToken,
+  "Content-Type": "application/json", //application/x-www-form-urlencoded
   "Accept": "application/json"
 }
-Vue.http.post(
-  "http://119.23.160.41:3292/Token",
-  {"grant_type": "client_credentials"},
-  {emulateJSON : true}
-).then((response)=>{
-  // 响应成功回调
-  bearerToken = response.body.access_token;
-  tokenType = response.body.token_type;
-  saveToLocal("bearerToken",bearerToken);
-  saveToLocal("tokenType",tokenType);
-  Vue.http.options.headers = {
-    "Authorization": tokenType +" "+bearerToken,
-    "Content-Type": "application/json", //application/x-www-form-urlencoded
-    "Accept": "application/json"
-  }
-},(response) => {
-  // 响应错误回调
-  Toast('请求失败，请检查网络1');
-})
-
-
 Vue.http.interceptors.push((request, next) => {
 	// 弹出系统等待对话框
 	if(window.plus){

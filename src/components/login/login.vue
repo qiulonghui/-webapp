@@ -33,7 +33,37 @@
 			}
 		},
 		created() {
-
+			// 获取用户授权Token请求headers
+			var clientId = "kkapi_shdata";
+      var clientSecret = "*SH888_kk&%API#";
+      var bearerToken = loadFromLocal("bearerToken","");
+			if(bearerToken===""){
+				// 设置请求头
+				Vue.http.options.headers = {
+		 			"Authorization": "Basic " + Base64Encode(clientId + ":" + clientSecret),
+		      "Content-Type": "application/json",
+		      "Accept": "application/json"
+				}
+				this.$http.post(
+	    		this.reqUrl+"/Token",
+	    		{"grant_type": "client_credentials"},
+	    		{emulateJSON : true}
+    		).then((response)=>{
+    			// 响应成功回调
+    			bearerToken = response.body.access_token;
+          var tokenType = response.body.token_type;
+					saveToLocal("bearerToken",bearerToken);
+          saveToLocal("tokenType",tokenType);
+          Vue.http.options.headers = {
+            "Authorization": tokenType +" "+bearerToken,
+            "Content-Type": "application/json", //application/x-www-form-urlencoded
+            "Accept": "application/json"
+          }
+				},(response) => {
+				  // 响应错误回调
+				  Toast('请求失败，请检查网络1');
+				})
+      }
 		},
 		computed: {
 			toggle: function(){
