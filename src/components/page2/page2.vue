@@ -60,7 +60,7 @@
 				<div class="day-satis" v-if="requestResult">
 					<div class="title">客户满意度</div>
 					<div class="sub-title">Customer satisfaction</div>
-					<div class="satis-chart" ref="satisChart" style="width: 8.15rem; height: 2.3rem; position: absolute; margin-top: -0.8rem; margin-left: -1.2rem;"></div>
+					<div class="satis-chart" ref="satisChart" style="width: 7.8rem; height: 2.3rem; position: absolute; margin-top: -0.8rem; margin-left: -1.13rem;"></div>
 				</div>
 				<div class="errorTip" v-else>网络请求失败，请重试</div>
 			</div>

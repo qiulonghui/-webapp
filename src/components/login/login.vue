@@ -33,33 +33,7 @@
 			}
 		},
 		created() {
-			//获取用户授权Token请求headers
-			var clientId = "kkapi_shdata";
-  		var clientSecret = "*SH888_kk&%API#";
-			var bearerToken = loadFromLocal("bearerToken","");
-			var tokenType = "";
-			if(bearerToken===""){
-				// 设置请求头
-				Vue.http.options.headers = {
-		 			"Authorization": "Basic " + Base64Encode(clientId + ":" + clientSecret),
-		      "Content-Type": "application/json",
-		      "Accept": "application/json"
-				}
-				this.$http.post(
-	    		this.reqUrl+"/Token",
-	    		{"grant_type": "client_credentials"},
-	    		{emulateJSON : true}
-    		).then((response)=>{
-    			// 响应成功回调
-    			bearerToken = response.body.access_token;
-    			tokenType = response.body.token_type;
-					saveToLocal("bearerToken",bearerToken);
-					saveToLocal("tokenType",tokenType);
-				},(response) => {
-				  // 响应错误回调
-				  Toast('请求失败，请检查网络1');
-				})
-			}
+
 		},
 		computed: {
 			toggle: function(){
@@ -70,15 +44,18 @@
 
 		methods:{
 			sendVerCode() {
-	    	if(this.phoneNumber===""||this.phoneNumber.length<11){
+        var patrn=/^1[3|4|5|7|8|9][0-9]{9}$/;
+	    	if(this.phoneNumber===""||this.phoneNumber.length<11||!patrn.exec(this.phoneNumber)){
 	    		Toast("请填写手机号码");
 	    	}else{
+          var bearerToken = loadFromLocal("bearerToken","");
+				  var tokenType = loadFromLocal("tokenType","");
 	    		this.$http.post(
 		    		this.reqUrl+"/api/Base/SendSMS",
 		    		{tel:this.phoneNumber},
 		    		{emulateJSON : true}
 	    		).then((response)=>{
-            // 响应错误回调
+            // 响应成功回调
 						if(response.body.return_code===1){
 							Toast(response.body.return_msg)
 						}else{

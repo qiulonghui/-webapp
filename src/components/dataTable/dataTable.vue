@@ -4,20 +4,20 @@
     {'table-header': table.TbHeaderType === 1},
     {'table-header2': table.TbHeaderType === 2}
     ]">
-      <div class="Label"></div>
+      <div class="Label p-left"></div>
       <div class="Label">{{table.Label1}}</div>
       <div v-show="!(timeType === 3)" class="Label">{{table.Label2}}</div>
     </div>
     <div class="table-body" v-if="table.chartType === 'line'">
       <div v-for="(tableItem,index) in table.tableList" :key="index" class="row">
-        <div class="colum">{{tableItem.date}}</div>
+        <div class="colum p-left">{{tableItem.date}}</div>
         <div class="colum">{{tableItem.thisData}}</div>
         <div v-show="!(timeType === 3)" class="colum">{{tableItem.lastData}}</div>
       </div>
     </div>
     <div class="table-body" v-else-if="table.chartType === 'pie'">
       <div v-for="(tableItem,index) in table.tableList" :key="index" class="row">
-        <div class="colum">{{tableItem.name}}</div>
+        <div class="colum p-left">{{tableItem.name}}</div>
         <div class="colum">{{tableItem.value}}</div>
         <div class="colum">{{tableItem.percent}}</div>
       </div>
@@ -80,5 +80,9 @@ export default {
 }
 .table-body .row .colum{
   flex: 1;
+}
+.p-left{
+  padding-left: 0.7rem;
+  text-align: left;
 }
 </style>

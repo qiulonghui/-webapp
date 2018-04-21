@@ -25,7 +25,7 @@ export default {
    .toggle-btn{
     width: 1.23rem;
     height: 0.7rem;
-    line-height: 0.7rem;
+    line-height: 0.75rem;
     text-align: center;
     font-size: 0.3rem;
     position: fixed;
