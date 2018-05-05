@@ -37,13 +37,13 @@
 			var clientId = "kkapi_shdata";
       var clientSecret = "*SH888_kk&%API#";
       var bearerToken = loadFromLocal("bearerToken","");
-			if(bearerToken===""){
+			if(bearerToken === ""){
 				// 设置请求头
 				Vue.http.options.headers = {
 		 			"Authorization": "Basic " + Base64Encode(clientId + ":" + clientSecret),
 		      "Content-Type": "application/json",
 		      "Accept": "application/json"
-				}
+        }
 				this.$http.post(
 	    		this.reqUrl+"/Token",
 	    		{"grant_type": "client_credentials"},
