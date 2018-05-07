@@ -34,10 +34,22 @@
 		},
 		created() {
 			// 获取用户授权Token请求headers
-			var clientId = "kkapi_shdata";
-      var clientSecret = "*SH888_kk&%API#";
       var bearerToken = loadFromLocal("bearerToken","");
 			if(bearerToken === ""){
+				this.reqBearerToken();
+      }
+		},
+		computed: {
+			toggle: function(){
+				var resendToggle = !this.verCodeToggle;
+				return resendToggle;
+			}
+		},
+
+		methods:{
+			reqBearerToken(fn) {
+				var clientId = "kkapi_shdata";
+	      var clientSecret = "*SH888_kk&%API#";
 				// 设置请求头
 				Vue.http.options.headers = {
 		 			"Authorization": "Basic " + Base64Encode(clientId + ":" + clientSecret),
@@ -59,20 +71,13 @@
             "Content-Type": "application/json", //application/x-www-form-urlencoded
             "Accept": "application/json"
           }
+          //执行回调
+          fn();
 				},(response) => {
 				  // 响应错误回调
-				  Toast('请求失败，请检查网络1');
+				  Toast('请求失败，请检查网络');
 				})
-      }
-		},
-		computed: {
-			toggle: function(){
-				var resendToggle = !this.verCodeToggle;
-				return resendToggle;
-			}
-		},
-
-		methods:{
+			},
 			sendVerCode() {
         var patrn=/^1[3|4|5|7|8|9][0-9]{9}$/;
 	    	if(this.phoneNumber===""||this.phoneNumber.length<11||!patrn.exec(this.phoneNumber)){
@@ -93,7 +98,8 @@
 						}
 					},(response) => {
 					  // 响应错误回调
-					  Toast(JSON.stringify(response));
+					  // Toast(JSON.stringify(response));
+					  Toast('请求失败，请检查网络');
 					});
 					this.verCodeToggle = false;
 					var timer = setInterval(()=>{
