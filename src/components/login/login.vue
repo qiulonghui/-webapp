@@ -34,11 +34,7 @@
 		},
 		created() {
 			// 获取用户授权Token请求headers
-      var bearerToken = loadFromLocal("bearerToken","");
-<<<<<<< HEAD
-			if(bearerToken === ""){
-				this.reqBearerToken();
-      }
+			this.reqBearerToken(); 
 		},
 		computed: {
 			toggle: function(){
@@ -48,12 +44,9 @@
 		},
 
 		methods:{
-			reqBearerToken(fn) {
+			reqBearerToken() {
 				var clientId = "kkapi_shdata";
 	      var clientSecret = "*SH888_kk&%API#";
-=======
-			if(bearerToken===""){
->>>>>>> parent of c2bf352... 20180505
 				// 设置请求头
 				Vue.http.options.headers = {
 		 			"Authorization": "Basic " + Base64Encode(clientId + ":" + clientSecret),
@@ -66,7 +59,7 @@
 	    		{emulateJSON : true}
     		).then((response)=>{
     			// 响应成功回调
-    			bearerToken = response.body.access_token;
+    			var bearerToken = response.body.access_token;
           var tokenType = response.body.token_type;
 					saveToLocal("bearerToken",bearerToken);
           saveToLocal("tokenType",tokenType);
@@ -76,7 +69,6 @@
             "Accept": "application/json"
           }
           //执行回调
-          fn();
 				},(response) => {
 				  // 响应错误回调
 				  Toast('请求失败，请检查网络');
