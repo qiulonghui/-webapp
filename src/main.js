@@ -46,7 +46,6 @@ Vue.http.options.headers = {
   "Content-Type": "application/json", //application/x-www-form-urlencoded
   "Accept": "application/json"
 }
-
 Vue.http.interceptors.push((request, next) => {
 	// 弹出系统等待对话框
 	if(window.plus){
@@ -58,7 +57,6 @@ Vue.http.interceptors.push((request, next) => {
 		plus.nativeUI.showWaiting( "加载中..." );
 	}
 	next((response) => {
-    // alert(JSON.stringify(Vue.http.options.headers))
 		plus.nativeUI.closeWaiting();
 	})
 })

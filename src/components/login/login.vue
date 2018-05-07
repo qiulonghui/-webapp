@@ -35,6 +35,7 @@
 		created() {
 			// 获取用户授权Token请求headers
       var bearerToken = loadFromLocal("bearerToken","");
+<<<<<<< HEAD
 			if(bearerToken === ""){
 				this.reqBearerToken();
       }
@@ -50,12 +51,15 @@
 			reqBearerToken(fn) {
 				var clientId = "kkapi_shdata";
 	      var clientSecret = "*SH888_kk&%API#";
+=======
+			if(bearerToken===""){
+>>>>>>> parent of c2bf352... 20180505
 				// 设置请求头
 				Vue.http.options.headers = {
 		 			"Authorization": "Basic " + Base64Encode(clientId + ":" + clientSecret),
 		      "Content-Type": "application/json",
 		      "Accept": "application/json"
-        }
+				}
 				this.$http.post(
 	    		this.reqUrl+"/Token",
 	    		{"grant_type": "client_credentials"},

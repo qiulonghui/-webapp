@@ -29,7 +29,7 @@ export default {
     text-align: center;
     font-size: 0.3rem;
     position: fixed;
-    top: 55.2%;
+    top: 52%;
     right: 0;
     color: #ffffff;
     background-image: -webkit-linear-gradient(-47deg, #817FE2 0%, #72DEE1 100%);
