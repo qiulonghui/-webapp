@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+	<body>
+		<script type="text/javascript">
+			(function(){
+				var arr = [];
+				for(var i=0;i<10;i++){
+					(function(){
+						arr[i]=function(){
+							console.log(i);
+						}
+					})()
+				}
+				arr[3]()
+			})();
+			
+			(function(){
+				
+				class ClassOne{
+					constructor(name,age){
+						this.name=name;
+						this.age=age;
+					}
+					
+					callName(){
+						(()=>{
+							console.log(this);
+							console.log(`他的名字叫做${this.name}`);
+						})()
+					}
+				}
+								
+				class ClassTwo extends ClassOne{
+					constructor(name,age){
+						super(name,age);
+					}
+					
+					findName(){
+						super.callName();
+					}
+					
+				}
+				
+				const Two=new ClassTwo('张三',50);
+				Two.findName();
+				
+				//问：Two.findName();执行之后，控制台打印的this指向谁？
+			})();
+			
+			(function(){
+				const HtmlWebpackPlugin = require('html-webpack-plugin');
+				const path = require('path');
+				
+				//webpack文件配置
+				module.exports={
+					//入口文件的配置项
+					entry:{
+						//只有一个入口
+						app: './src/main.js'
+					},
+					//出口文件的配置项
+					output:{
+						//打包的路径
+						//引入path模块
+						path:path.resolve(__dirname,'dist'),
+						//打包的文件名称
+						filename:'bundle.js'
+					},
+					//编译模块加载器（loader）
+					module:{
+						rules: {
+							test: /\.js|jsx$/, //是一个正则，代表js或者jsx后缀的文件要使用下面的loader
+							loader: "babel-loader"
+						},
+						{
+							test: /\.scss$/,
+							use: [
+								{loader: 'style-loader'},
+								{loader: 'css-loader'},
+								{
+									loader: 'postcss-loader',
+									options: {
+										plugins: () => [autoprefixer(
+											{browsers: ['ios>=7', 'Android>=4.1', 
+												'last 10 Chrome versions', 
+												'last 10 Firefox versions', 
+												'Safari>= 6', 'ie>8']
+											}
+										)]
+									}
+								},
+								'sass-loader'
+							]
+						},
+						{
+							test: /\.css$/,
+							loader: "style-loader!css-loader"//添加对样式表的处理
+						}
+					},
+					//插件，用于生产模板的各项功能
+					plugins:[
+						//压缩js插件
+						new webpack.optimize.UglifyJsPlugin(),
+						//以index.html文件为模板生成html5新文件
+						new HtmlWebpackPlugin({template: './src/index.html'})
+					],
+					//webpack本地服务配置
+					devServer:{
+						contentBase: "./", //本地服务器搭建页面的目录
+						historyApiFallback: true, //使用的是HTML5 History Api
+						inline: true, 
+						hot: true //热更新
+					}
+				}
+			})();
+			
+		</script>
+	</body>
+</html>

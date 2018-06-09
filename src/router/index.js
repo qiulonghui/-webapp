@@ -83,8 +83,6 @@ let router = new Router({
   ]
 })
 
-export default router;
-
 //页面跳转前的路由控制
 router.beforeEach((to, from, next) => {
   //未登录时跳转到登陆页面
@@ -115,6 +113,6 @@ router.beforeEach((to, from, next) => {
   next()
 })
 
-
+export default router;
 
 

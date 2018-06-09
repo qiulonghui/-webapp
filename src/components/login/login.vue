@@ -34,7 +34,7 @@
 		},
 		created() {
 			// 获取用户授权Token请求headers
-			this.reqBearerToken(); 
+			this.reqBearerToken();
 		},
 		computed: {
 			toggle: function(){
@@ -68,10 +68,9 @@
             "Content-Type": "application/json", //application/x-www-form-urlencoded
             "Accept": "application/json"
           }
-          //执行回调
 				},(response) => {
 				  // 响应错误回调
-				  Toast('请求失败，请检查网络');
+				  Toast('授权头信息请求失败，请检查网络');
 				})
 			},
 			sendVerCode() {
@@ -95,7 +94,7 @@
 					},(response) => {
 					  // 响应错误回调
 					  // Toast(JSON.stringify(response));
-					  Toast('请求失败，请检查网络');
+					  Toast('验证码发送失败，请检查网络');
 					});
 					this.verCodeToggle = false;
 					var timer = setInterval(()=>{
@@ -133,13 +132,14 @@
 				}
 	    },
 			login() {
-				var inf = plus.push.getClientInfo();
-				var u = navigator.userAgent.toLowerCase();
+				var inf = plus.push.getClientInfo();  // h5+ API获取APP基座唯一标识，用于消息推送
+				var u = navigator.userAgent.toLowerCase(); // 当前设备类型
 				var gtClientId = inf.clientid;
 				var vpResult = this._veriPhone;
 				var vcResult = this._veriCode;
 				var bearerToken = loadFromLocal("bearerToken","");
 				var tokenType = loadFromLocal("tokenType","");
+        // 判断设备类型，传递给后台，后台将采用不同的推送方式
 				if (u.indexOf('android') > -1) {
          //安卓手机
          var deviceType = "Android";
@@ -147,6 +147,7 @@
 	       //苹果手机
 	       deviceType = "IOS";
 	      }
+        // 设置请求头
 				Vue.http.options.headers = {
 		 			"Authorization": tokenType +" "+bearerToken,
 		      "Content-Type": "application/json",
@@ -167,7 +168,9 @@
 							saveToLocal("token",msg.token);
 							saveToLocal("comp_list",msg.comp_list)
 							var token = msg.token;
-							//判断是否存在推送的标识clientid，0为无。需要将ID发送给服务器
+
+              // 登录成功后发送clientid,clientid用于后台推送消息，是个推推送用来识别设备的唯一标识。
+							// 判断是否存在推送的标识clientid，0为无。需要将ID发送给服务器
 							if(msg.isclientid === 0){
 								this.$http.get(
 					    		this.reqUrl+"/api/User/getGetTui?token="+token+"&clientid="+gtClientId+"&apptype="+deviceType,
@@ -179,7 +182,7 @@
 	              	window.location.reload();
 								},(response) => {
 								  // 响应错误回调
-								  Toast('gtId获取失败');
+								  Toast('个推推送标识发送失败，请重新登录');
 								})
 							}else{
 								this.$router.replace({
@@ -192,7 +195,7 @@
 						}
 					},(response) => {
 					  // 响应错误回调
-					  Toast('请求失败，请检查网络');
+					  Toast('登录失败，请检查网络');
 					})
 				}
 			}
