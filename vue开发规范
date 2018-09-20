@@ -1,0 +1,137 @@
+### VUEJS开发规范
+一. 组件命名规范
+二. 结构化规范
+三. 注释规范
+四. 编码规范
+***
+#### 一. 组件命名规范
+* 组件文件命名
+Vue官方文档给予以下说明：
+>当注册组件时，可以使用 kebab-case (短横线分隔命名)、camelCase (驼峰式命名) 或 PascalCase (单词首字母大写命名)。
+PascalCase 是最通用的声明约定而 kebab-case 是最通用的使用约定。
+
+	因此，为保证声明和引用组件的一致性。统一采用PascalCase的方式为组件命名。例如：
+```
+components/
+|- MyComponent.vue
+```
+
+* 基础组件名
+应用特定样式和约定的基础组件 (也就是展示类的、无逻辑的或无状态的组件) 应该全部以一个特定的前缀开头，比如 Base、App 或 V。
+例如:
+	```
+components/
+|- BaseButton.vue
+|- BaseTable.vue
+|- BaseIcon.vue
+```
+* 关联组件命名
+如果一个组件只在某个父组件的场景下有意义，这层关系应该体现在其名字上。因为编辑器通常会按字母顺序组织文件，所以这样做可以把相关联的文件排在一起。
+例如：
+```
+components/
+|- TodoList.vue
+|- TodoListItem.vue
+|- TodoListItemButton.vue
+components/
+|- SearchSidebar.vue
+|- SearchSidebarNavigation.vue
+```
+
+#### 二.结构化规范
+* 项目目录结构
+	基于Vue-cli脚手架结构基础划分
+```
+   ├── index.html                      入口页面
+    ├── build                           构建脚本目录
+    │   ├──build.js                        生产环境构建（编译打包）脚本
+    │   ├──check-versions.js             版本验证工具
+    │   ├──utils.js                        主要用来处理css类文件的loader
+    │   ├──vue-loader.conf.js            处理vue中的样式
+    │   ├── webpack.base.conf.js         webpack基础配置
+    │   ├── webpack.dev.conf.js          webpack开发环境配置
+    │   └── webpack.prod.conf.js          webpack生产环境配置
+    ├── config                          项目配置
+    │   ├── dev.env.js                      开发环境变量
+    │   ├── index.js                        项目配置文件
+    │   ├── prod.env.js                     生产环境变量
+    │   └── test.env.js                     测试环境变量
+    ├── dist                            打包好的项目
+    ├── node_modules                        项目依赖模块    
+    ├── src                             项目源码目录    
+    │   ├── main.js                         入口js文件
+    │   ├── App.vue                         根组件
+    │   ├── components                     公共组件目录
+	│   │   └── MyComponent.vue
+    │   ├── assets                          资源目录，资源会被wabpack构建
+    │   │   └── css                             第三方css文件，全局css文件
+    │   │   └── font                            字体
+    │   │   └── scss                            全局scss
+    │   │   └── js                              通用的函数方法及定义的类
+    │   │   └── images                          图片
+    │   │       └── logo.png
+    │   ├── routes                           前端路由
+    │   │   └── index.js
+    │   ├── pages                            页面级组件
+    │   │   └── Home.vue
+    │   ├── store                             vuex文件夹
+	│   │   └── state.js                       state
+    │   │   └── action.js                      action
+	│   │   └── getter.js                      getter
+	│   │   └── index.js                       vuex入口文件
+	│   │   └── mutation.js                    mutation
+	│   │   └── mutation-type.js               mutation-type
+    │   ├── api                          公共服务文件
+    │   │   └── api.js                      获取请求接口，响应数据
+    ├── static                          纯静态资源，不会被wabpack构建。
+```
+* vue文件方法声明顺序
+>  components   
+	props    
+	data     
+	created
+	mounted
+	activited
+	update
+	beforeRouteUpdate
+	metods   
+	filter
+	computed
+	watch
+
+* 多个元素特性
+多个特性的元素应该分多行撰写，每个特性一行。
+```
+<img
+   src="https://vuejs.org/images/logo.png"
+   alt="Vue Logo"
+>
+<MyComponent
+   foo="a"
+   bar="b"
+   baz="c"
+/>
+```
+#### 三.注释规范
+代码注释在一个项目的后期维护中显的尤为重要，所以我们要为每一个被复用的组件编写组件使用说明，为组件中每一个方法编写方法说明。
+以下情况，需要添加注释
+> 1.公共组件使用说明
+2.各组件中重要函数或者类说明
+3.复杂的业务逻辑处理说明
+4.特殊情况的代码处理说明,对于代码中特殊用途的变量、存在临界值、函 数中使用的hack、使用了某种算法或思路等需要进行注释描述
+5.根据注释内容选择使用单行注释或者块级注释
+
+#### 四.编码规范
+统一的编码规范，可使代码更易于阅读，易于理解，易于维护，尽量按照ESLint格式要求编写代码。
+
+1. 使用ES6风格编码
+ -定义变量使用let ,定义常量使用const 
+ -使用export ，import 模块化 
+2. 组件 props 尽量只使用JavaScript 原始类型(字符串、数字、布尔值) 和 函数，尽量避免复杂的对象
+ -提供默认值 
+ -使用 type 属性校验类型 
+ -使用 props 之前先检查该 prop 是否存在 
+3. 避免 this.$parents
+4. 谨慎使用this.$refs 对DOM节点进行直接操作
+5. 无需将 this 赋值给 component 变量 
+6. 调试信息console.log() debugger 使用完及时删除
